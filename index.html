@@ -18,44 +18,34 @@
 }
 html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
 a{color:var(--accent)}
-
-/* ─── Focus styles (accessibility) ─── */
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 
 /* ─── Layout ─── */
 #app{display:flex;height:100vh;overflow:hidden}
-#sidebar{
-  width:var(--sidebar);min-width:var(--sidebar);height:100%;
-  background:var(--surface);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;overflow:hidden;z-index:10;
-}
+#sidebar{width:var(--sidebar);min-width:var(--sidebar);height:100%;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;z-index:10}
 #map-wrap{flex:1;position:relative}
 #map{width:100%;height:100%}
 
 /* ─── App header ─── */
-#app-header{
-  padding:14px 16px 12px;border-bottom:1px solid var(--border);flex-shrink:0;
-  display:flex;align-items:center;gap:10px;
-}
-#app-header .logo{
-  width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));
-  border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
+#app-header{padding:14px 16px 12px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:10px}
+#app-header .logo{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 #app-header .logo svg{color:#fff}
 #app-header .app-title{font-size:15px;font-weight:700;color:var(--text);line-height:1.1}
-#app-header .app-sub{font-size:11px;color:var(--text3);font-weight:400}
+#app-header .app-sub{font-size:11px;color:var(--text3)}
+#header-auth{margin-left:auto;flex-shrink:0}
+.btn-auth-login{background:rgba(79,140,255,.12);border:1px solid rgba(79,140,255,.3);color:var(--accent);padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap}
+.btn-auth-login:hover{background:rgba(79,140,255,.2)}
+.user-pill{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 8px 4px 4px}
+.user-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.user-email{font-size:11px;color:var(--text2);font-weight:500;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-logout{background:none;border:none;cursor:pointer;color:var(--text3);padding:2px;display:flex;align-items:center;transition:color .2s;border-radius:4px}
+.btn-logout:hover{color:var(--red)}
 
-/* ─── Sidebar tabs ─── */
+/* ─── Tabs ─── */
 #tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
-.tab{
-  flex:1;padding:11px 6px;font-size:12px;font-weight:600;text-align:center;
-  cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;
-  transition:color .2s,border-color .2s;letter-spacing:.03em;user-select:none;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-}
+.tab{flex:1;padding:11px 6px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:color .2s,border-color .2s;letter-spacing:.03em;user-select:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .tab:hover{color:var(--text2)}
 .tab.active{color:var(--accent);border-color:var(--accent)}
-.tab svg{flex-shrink:0}
 
 /* ─── Panel ─── */
 .panel{flex:1;overflow-y:auto;display:none;padding:16px;gap:12px;flex-direction:column}
@@ -64,53 +54,33 @@ a{color:var(--accent)}
 .panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
 /* ─── Section ─── */
-.section{
-  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
-  padding:14px;display:flex;flex-direction:column;gap:10px;
-}
+.section{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px}
 .section-title{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
 
 /* ─── Form controls ─── */
 label{font-size:13px;color:var(--text2);font-weight:500;display:block;margin-bottom:4px}
-input[type=text],input[type=number],select,textarea{
+input[type=text],input[type=email],input[type=password],input[type=number],select,textarea{
   width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
   color:var(--text);font-family:inherit;font-size:13px;padding:9px 12px;outline:none;
-  transition:border-color .2s,box-shadow .2s;
-}
-input[type=text]:focus,input[type=number]:focus,select:focus{
-  border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,140,255,.12);
-}
+  transition:border-color .2s,box-shadow .2s}
+input[type=text]:focus,input[type=email]:focus,input[type=password]:focus,input[type=number]:focus,select:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,140,255,.12)}
 input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 
-/* ─── Duration pills ─── */
+/* ─── Pills ─── */
 .pill-group{display:flex;flex-wrap:wrap;gap:6px}
-.pill{
-  padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
-  border:1px solid var(--border);background:var(--bg);color:var(--text2);
-  cursor:pointer;transition:all .2s;user-select:none;
-}
+.pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--bg);color:var(--text2);cursor:pointer;transition:all .2s;user-select:none}
 .pill:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,140,255,.06)}
 .pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
 
 /* ─── Route type cards ─── */
 .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.type-card{
-  border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:12px 8px;text-align:center;cursor:pointer;background:var(--bg);
-  transition:all .2s;user-select:none;position:relative;overflow:hidden;
-}
+.type-card{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 8px;text-align:center;cursor:pointer;background:var(--bg);transition:all .2s;user-select:none;position:relative;overflow:hidden}
 .type-card:hover{border-color:var(--accent);background:rgba(79,140,255,.05)}
 .type-card.active{border-color:var(--accent);background:rgba(79,140,255,.1)}
-.type-card.active::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
-}
-.type-card .icon{
-  width:22px;height:22px;margin:0 auto 6px;color:var(--text3);
-  transition:color .2s;
-}
-.type-card:hover .icon{color:var(--accent)}
-.type-card.active .icon{color:var(--accent)}
+.type-card.active::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.type-card .icon{width:22px;height:22px;margin:0 auto 6px;color:var(--text3);transition:color .2s}
+.type-card:hover .icon,.type-card.active .icon{color:var(--accent)}
 .type-card .label{font-size:11px;font-weight:600;color:var(--text2);transition:color .2s}
 .type-card.active .label{color:var(--accent)}
 
@@ -120,55 +90,32 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 .toggle-label svg{color:var(--text3);flex-shrink:0}
 .toggle{position:relative;width:38px;height:22px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
-.toggle-slider{
-  position:absolute;inset:0;background:#252a3d;border-radius:11px;cursor:pointer;
-  transition:.2s;}
-.toggle-slider:before{
-  content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;
-  border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.toggle-slider{position:absolute;inset:0;background:#252a3d;border-radius:11px;cursor:pointer;transition:.2s}
+.toggle-slider:before{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .toggle input:checked+.toggle-slider{background:var(--accent)}
 .toggle input:checked+.toggle-slider:before{transform:translateX(16px)}
 
 /* ─── Buttons ─── */
-.btn{
-  width:100%;padding:11px 16px;border-radius:var(--radius-sm);border:none;
-  font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
-  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;
-}
+.btn{width:100%;padding:11px 16px;border-radius:var(--radius-sm);border:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
 .btn svg{flex-shrink:0}
-.btn-primary{
-  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
-  box-shadow:0 2px 12px rgba(79,140,255,.3);
-}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 2px 12px rgba(79,140,255,.3)}
 .btn-primary:hover{box-shadow:0 4px 20px rgba(79,140,255,.45);transform:translateY(-1px)}
 .btn-primary:active{transform:none;box-shadow:0 2px 8px rgba(79,140,255,.2)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
 .btn-secondary:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,140,255,.05)}
-.btn-danger{
-  background:transparent;border:1px solid rgba(248,113,113,.4);color:var(--red);
-  padding:6px 10px;font-size:12px;width:auto;border-radius:6px;
-}
+.btn-danger{background:transparent;border:1px solid rgba(248,113,113,.4);color:var(--red);padding:6px 10px;font-size:12px;width:auto;border-radius:6px}
 .btn-danger:hover{background:var(--red);color:#fff;border-color:var(--red)}
 .btn-sm{padding:8px 12px;font-size:12px;width:auto}
 .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2);padding:8px 14px;font-size:12px;width:auto}
 .btn-ghost:hover{border-color:var(--accent2);color:var(--accent2)}
-.btn-surprise{
-  background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;
-  box-shadow:0 2px 12px rgba(245,158,11,.25);
-}
+.btn-surprise{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;box-shadow:0 2px 12px rgba(245,158,11,.25)}
 .btn-surprise:hover{box-shadow:0 4px 20px rgba(245,158,11,.4);transform:translateY(-1px)}
-.btn-surprise:active{transform:none}
-
-/* ─── Location buttons row ─── */
 .loc-btns{display:flex;gap:6px}
 .loc-btns .btn{flex:1;padding:8px 6px;font-size:11px}
 
-/* ─── Route info bar ─── */
-#route-info{
-  display:none;background:var(--surface2);
-  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-  padding:12px 16px;flex:0 0 auto;flex-direction:column;gap:4px;
-}
+/* ─── Route info ─── */
+#route-info{display:none;background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 16px;flex:0 0 auto;flex-direction:column;gap:4px}
 #route-info.visible{display:flex}
 .info-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .info-stat{display:flex;flex-direction:column;gap:2px}
@@ -182,10 +129,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 #save-form .row{display:flex;gap:8px}
 
 /* ─── Saved routes ─── */
-.route-item{
-  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:6px;
-}
+.route-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:6px}
 .route-item:hover{border-color:var(--accent2);background:rgba(167,139,250,.04)}
 .route-item.loaded{border-color:var(--accent);background:rgba(79,140,255,.04)}
 .route-item-header{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -196,49 +140,60 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 .badge-dist{background:rgba(34,197,94,.12);color:var(--green)}
 .badge-dur{background:rgba(245,158,11,.12);color:var(--orange)}
 .route-date{font-size:11px;color:var(--text3)}
-#no-routes{
-  text-align:center;color:var(--text3);font-size:13px;padding:32px 16px;
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-}
-#no-routes svg{color:var(--text3);opacity:.5}
+#no-routes{text-align:center;color:var(--text3);font-size:13px;padding:32px 16px;display:flex;flex-direction:column;align-items:center;gap:8px}
+#no-routes svg{opacity:.4}
 
-/* ─── Map overlay controls ─── */
+/* ─── Auth prompt (in saved panel) ─── */
+#auth-prompt{display:none;flex-direction:column;align-items:center;gap:12px;padding:32px 16px;text-align:center}
+#auth-prompt.visible{display:flex}
+#auth-prompt svg{color:var(--accent);opacity:.6}
+#auth-prompt p{font-size:13px;color:var(--text2);line-height:1.5}
+#auth-prompt strong{color:var(--text);font-weight:600}
+
+/* ─── Routes loading skeleton ─── */
+.route-skeleton{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;display:flex;flex-direction:column;gap:8px}
+.skel-line{background:var(--border);border-radius:4px;animation:shimmer 1.4s ease-in-out infinite}
+.skel-line.wide{height:12px;width:70%}
+.skel-line.narrow{height:10px;width:40%}
+@keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.8}}
+
+/* ─── Map controls ─── */
 #map-controls{position:absolute;top:14px;right:14px;z-index:999;display:flex;flex-direction:column;gap:8px}
-.map-btn{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-  color:var(--text2);padding:9px 14px;font-family:inherit;font-size:12px;font-weight:600;
-  cursor:pointer;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:6px;
-  box-shadow:var(--shadow);
-}
+.map-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);padding:9px 14px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:6px;box-shadow:var(--shadow)}
 .map-btn:hover{border-color:var(--accent);color:var(--accent)}
-#pick-hint{
-  display:none;position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:999;
-  background:var(--accent);color:#fff;padding:10px 20px;border-radius:20px;
-  font-size:13px;font-weight:600;pointer-events:none;box-shadow:0 4px 16px rgba(79,140,255,.4);
-}
-
-/* ─── Start display ─── */
-#start-display{
-  font-size:11px;color:var(--green);display:none;
-  display:none;align-items:center;gap:5px;
-}
-#start-display svg{flex-shrink:0}
+#pick-hint{display:none;position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:999;background:var(--accent);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;pointer-events:none;box-shadow:0 4px 16px rgba(79,140,255,.4)}
 
 /* ─── Spinner ─── */
 .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+.spinner-dark{border-color:rgba(79,140,255,.2);border-top-color:var(--accent)}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ─── Toast ─── */
-#toast{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);
-  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
-  padding:11px 20px;font-size:13px;font-weight:500;z-index:9999;
-  opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;
-  box-shadow:var(--shadow);
-}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 20px;font-size:13px;font-weight:500;z-index:9999;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.success{border-color:var(--green);color:var(--green)}
 #toast.error{border-color:var(--red);color:var(--red)}
+
+/* ─── Auth modal ─── */
+#auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#auth-overlay.visible{display:flex}
+#auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:100%;max-width:360px;margin:16px;display:flex;flex-direction:column;gap:20px;box-shadow:0 24px 64px rgba(0,0,0,.6)}
+.auth-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.auth-logo{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.auth-logo svg{color:#fff}
+.auth-title{font-size:18px;font-weight:700;color:var(--text)}
+.auth-sub{font-size:13px;color:var(--text3);margin-top:2px}
+.btn-close-auth{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;display:flex;align-items:center;border-radius:6px;transition:color .2s}
+.btn-close-auth:hover{color:var(--text)}
+.auth-fields{display:flex;flex-direction:column;gap:12px}
+.auth-fields label{margin-bottom:4px}
+#auth-error{font-size:12px;color:var(--red);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:6px;padding:8px 12px;display:none}
+#auth-error.visible{display:block}
+#auth-info{font-size:12px;color:var(--green);background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:8px 12px;display:none}
+#auth-info.visible{display:block}
+.auth-footer{font-size:12px;color:var(--text3);text-align:center}
+.auth-footer a{color:var(--accent);cursor:pointer;font-weight:500}
+.auth-footer a:hover{text-decoration:underline}
 
 /* ─── Mobile ─── */
 @media(max-width:768px){
@@ -249,27 +204,29 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
   #route-info{padding:10px 12px}
   #save-form{padding:10px 12px}
   #app-header{padding:10px 12px}
+  .user-email{display:none}
 }
 </style>
 </head>
 <body>
 <div id="app">
-  <!-- LEFT SIDEBAR -->
   <div id="sidebar">
 
-    <!-- App header -->
+    <!-- Header -->
     <div id="app-header">
       <div class="logo">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="3 11 22 2 13 21 11 13 3 11"/>
-        </svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
       </div>
       <div>
         <div class="app-title">MotoRoute</div>
-        <div class="app-sub">Nederland · België · Duitsland</div>
+        <div class="app-sub">NL · BE · DE</div>
+      </div>
+      <div id="header-auth">
+        <!-- Gevuld door JS -->
       </div>
     </div>
 
+    <!-- Tabs -->
     <div id="tabs">
       <div class="tab active" data-tab="plan" role="tab" aria-selected="true">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>
@@ -281,10 +238,8 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
       </div>
     </div>
 
-    <!-- PLAN PANEL -->
+    <!-- Plan panel -->
     <div id="panel-plan" class="panel active">
-
-      <!-- Starting location -->
       <div class="section">
         <div class="section-title">Vertrekpunt</div>
         <div>
@@ -296,11 +251,11 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             Zoeken
           </button>
-          <button class="btn btn-secondary btn-sm" id="btn-pick" aria-label="Klik op kaart om startpunt te kiezen">
+          <button class="btn btn-secondary btn-sm" id="btn-pick" aria-label="Klik op kaart">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
             Kaart
           </button>
-          <button class="btn btn-secondary btn-sm" id="btn-myloc" aria-label="Gebruik mijn huidige locatie">
+          <button class="btn btn-secondary btn-sm" id="btn-myloc" aria-label="Mijn locatie">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><circle cx="12" cy="12" r="7"/></svg>
             Locatie
           </button>
@@ -311,7 +266,6 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
         </div>
       </div>
 
-      <!-- Duration -->
       <div class="section">
         <div class="section-title">Duur</div>
         <div class="pill-group" id="duration-pills">
@@ -327,50 +281,36 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
         </div>
       </div>
 
-      <!-- Route type -->
       <div class="section">
         <div class="section-title">Routestijl</div>
         <div class="type-grid" id="route-types">
           <div class="type-card active" data-type="scenic" role="button" tabindex="0">
-            <div class="icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 15h16L12 3 8 3z"/><path d="m2 20 4-5 4 3 4-6 4 8"/></svg>
-            </div>
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/><path d="m2 20 4-5 4 3 4-6 4 8"/></svg></div>
             <div class="label">Schilderachtig</div>
           </div>
           <div class="type-card" data-type="flat" role="button" tabindex="0">
-            <div class="icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M3 8h18"/><path d="M3 16h18"/></svg>
-            </div>
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M3 8h18"/><path d="M3 16h18"/></svg></div>
             <div class="label">Vlak</div>
           </div>
           <div class="type-card" data-type="hilly" role="button" tabindex="0">
-            <div class="icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
-            </div>
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg></div>
             <div class="label">Heuvelachtig</div>
           </div>
           <div class="type-card" data-type="mixed" role="button" tabindex="0">
-            <div class="icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/></svg>
-            </div>
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/></svg></div>
             <div class="label">Gemengd</div>
           </div>
           <div class="type-card" data-type="loop" role="button" tabindex="0">
-            <div class="icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-            </div>
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></div>
             <div class="label">Lus</div>
           </div>
           <div class="type-card" data-type="oneway" role="button" tabindex="0">
-            <div class="icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </div>
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
             <div class="label">Eenrichtings</div>
           </div>
         </div>
       </div>
 
-      <!-- Road filters -->
       <div class="section">
         <div class="section-title">Wegfilters</div>
         <div class="toggle-row">
@@ -403,7 +343,6 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
         </div>
       </div>
 
-      <!-- Actions -->
       <button class="btn btn-primary" id="btn-generate">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
         <span class="btn-label">Genereer route</span>
@@ -439,9 +378,18 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
       </div>
     </div>
 
-    <!-- SAVED PANEL -->
+    <!-- Saved panel -->
     <div id="panel-saved" class="panel">
-      <div id="no-routes">
+      <!-- Auth prompt (niet ingelogd) -->
+      <div id="auth-prompt">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <p><strong>Log in om routes op te slaan</strong><br/>Maak een gratis account aan en bewaar al je favoriete routes.</p>
+        <button class="btn btn-primary btn-sm" id="btn-auth-from-saved">
+          Inloggen of registreren
+        </button>
+      </div>
+      <!-- Routes lijst (ingelogd) -->
+      <div id="no-routes" style="display:none">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>
         Nog geen opgeslagen routes.<br/>Genereer een route en sla hem op!
       </div>
@@ -449,12 +397,12 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
     </div>
   </div>
 
-  <!-- MAP -->
+  <!-- Map -->
   <div id="map-wrap">
     <div id="map"></div>
     <div id="pick-hint">Klik op de kaart om je startpunt in te stellen</div>
     <div id="map-controls">
-      <button class="map-btn" id="btn-center" aria-label="Hercentreren op route">
+      <button class="map-btn" id="btn-center" aria-label="Hercentreren">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><circle cx="12" cy="12" r="7"/></svg>
         Hercentreren
       </button>
@@ -464,9 +412,53 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 
 <div id="toast" role="status" aria-live="polite"></div>
 
+<!-- Auth modal -->
+<div id="auth-overlay">
+  <div id="auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <div class="auth-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="auth-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+        </div>
+        <div>
+          <div class="auth-title" id="auth-title">Inloggen</div>
+          <div class="auth-sub">op MotoRoute</div>
+        </div>
+      </div>
+      <button class="btn-close-auth" id="btn-close-auth" aria-label="Sluiten">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="auth-fields">
+      <div>
+        <label for="auth-email">E-mailadres</label>
+        <input type="email" id="auth-email" placeholder="jij@voorbeeld.nl" autocomplete="email"/>
+      </div>
+      <div>
+        <label for="auth-password">Wachtwoord</label>
+        <input type="password" id="auth-password" placeholder="Minimaal 6 tekens" autocomplete="current-password"/>
+      </div>
+    </div>
+    <div id="auth-error"></div>
+    <div id="auth-info"></div>
+    <button class="btn btn-primary" id="auth-submit">Inloggen</button>
+    <div class="auth-footer">
+      Nog geen account? <a id="auth-toggle-link">Registreren</a>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-// ─── State ───────────────────────────────────────────────────────────────────
+// ─── Supabase ─────────────────────────────────────────────────────────────────
+const { createClient } = supabase;
+const sb = createClient(
+  'https://notssbdzxrzgehahpvfv.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdHNzYmR6eHJ6Z2VoYWhwdmZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODY1MDEsImV4cCI6MjA4ODM2MjUwMX0.Y6Rsd3jD7KXxpod2pp73uiB1gE55kAWOGBCrx6p7VQU'
+);
+
+// ─── State ────────────────────────────────────────────────────────────────────
 const S = {
   start: null,
   durationMin: 60,
@@ -476,34 +468,27 @@ const S = {
   savedRoutes: [],
   pickMode: false,
   loadedRouteId: null,
+  user: null,
 };
 
-// ─── Map setup ───────────────────────────────────────────────────────────────
+// ─── Map ──────────────────────────────────────────────────────────────────────
 const map = L.map('map', {zoomControl:false}).setView([52.3,7.5],7);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-  attribution:'© <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors',
-  maxZoom:19
+  attribution:'© <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors',maxZoom:19
 }).addTo(map);
 L.control.zoom({position:'bottomright'}).addTo(map);
 
-let startMarker = null;
-let activePolyline = null;
-let savedPolylines = {};
+let startMarker=null,activePolyline=null,savedPolylines={};
+const startIcon=L.divIcon({className:'',html:`<div style="background:#4f8cff;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px #0008"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
 
-const startIcon = L.divIcon({
-  className:'',
-  html:`<div style="background:#4f8cff;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px #0008"></div>`,
-  iconSize:[14,14],iconAnchor:[7,7]
-});
-
-// ─── UI helpers ──────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function $(id){return document.getElementById(id)}
 function toast(msg,type='success'){
   const t=$('toast');t.textContent=msg;t.className='show '+(type||'');
   clearTimeout(t._t);t._t=setTimeout(()=>t.className='',2800);
 }
-
-const generateIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>`;
+const generateIcon=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>`;
+const trashIcon=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
 
 function setLoading(on){
   const btn=$('btn-generate');
@@ -511,18 +496,137 @@ function setLoading(on){
   else{btn.innerHTML=`${generateIcon}<span class="btn-label">Genereer route</span>`;btn.disabled=false}
 }
 function showRouteInfo(dist,dur,type){
-  $('info-dist').textContent=dist;
-  $('info-dur').textContent=dur;
-  $('info-type-badge').textContent=type;
-  $('route-info').classList.add('visible');
-  $('save-form').classList.add('visible');
+  $('info-dist').textContent=dist;$('info-dur').textContent=dur;$('info-type-badge').textContent=type;
+  $('route-info').classList.add('visible');$('save-form').classList.add('visible');
 }
 function hideRouteInfo(){
-  $('route-info').classList.remove('visible');
-  $('save-form').classList.remove('visible');
+  $('route-info').classList.remove('visible');$('save-form').classList.remove('visible');
+}
+function escHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+const typeLabels={scenic:'Schilderachtig',flat:'Vlak',hilly:'Heuvelachtig',mixed:'Gemengd',loop:'Lus',oneway:'Eenrichtings'};
+
+// ─── Auth UI ──────────────────────────────────────────────────────────────────
+let authMode='login'; // 'login' | 'register'
+
+function renderHeaderAuth(){
+  const el=$('header-auth');
+  if(S.user){
+    const initial=S.user.email[0].toUpperCase();
+    el.innerHTML=`
+      <div class="user-pill">
+        <div class="user-avatar">${initial}</div>
+        <span class="user-email">${escHtml(S.user.email)}</span>
+        <button class="btn-logout" id="btn-logout" aria-label="Uitloggen" title="Uitloggen">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>`;
+    $('btn-logout').addEventListener('click', signOut);
+  } else {
+    el.innerHTML=`<button class="btn-auth-login" id="btn-open-auth">Inloggen</button>`;
+    $('btn-open-auth').addEventListener('click', ()=>openAuthModal());
+  }
 }
 
-// ─── Tabs ────────────────────────────────────────────────────────────────────
+function openAuthModal(mode='login'){
+  authMode=mode;
+  $('auth-overlay').classList.add('visible');
+  $('auth-title').textContent=mode==='login'?'Inloggen':'Registreren';
+  $('auth-submit').textContent=mode==='login'?'Inloggen':'Account aanmaken';
+  $('auth-toggle-link').textContent=mode==='login'?'Registreren':'Toch inloggen';
+  document.querySelector('.auth-footer').firstChild.textContent=
+    mode==='login'?'Nog geen account? ':'Al een account? ';
+  $('auth-error').className='';$('auth-error').textContent='';
+  $('auth-info').className='';$('auth-info').textContent='';
+  setTimeout(()=>$('auth-email').focus(),50);
+}
+
+function closeAuthModal(){
+  $('auth-overlay').classList.remove('visible');
+  $('auth-password').value='';
+  $('auth-error').className='';$('auth-error').textContent='';
+  $('auth-info').className='';$('auth-info').textContent='';
+}
+
+$('btn-close-auth').addEventListener('click', closeAuthModal);
+$('auth-overlay').addEventListener('click', e=>{if(e.target===$('auth-overlay'))closeAuthModal()});
+$('auth-toggle-link').addEventListener('click', ()=>openAuthModal(authMode==='login'?'register':'login'));
+$('btn-auth-from-saved').addEventListener('click', ()=>openAuthModal());
+
+$('auth-password').addEventListener('keydown', e=>{if(e.key==='Enter')doAuth()});
+$('auth-submit').addEventListener('click', doAuth);
+
+async function doAuth(){
+  const email=$('auth-email').value.trim();
+  const password=$('auth-password').value;
+  if(!email||!password){showAuthError('Vul je e-mail en wachtwoord in.');return}
+  if(password.length<6){showAuthError('Wachtwoord moet minimaal 6 tekens zijn.');return}
+
+  $('auth-submit').disabled=true;
+  $('auth-submit').innerHTML='<span class="spinner"></span>';
+  $('auth-error').className='';
+
+  try{
+    let result;
+    if(authMode==='login'){
+      result=await sb.auth.signInWithPassword({email,password});
+    } else {
+      result=await sb.auth.signUp({email,password});
+    }
+    if(result.error) throw result.error;
+
+    if(authMode==='register'&&!result.data.session){
+      // E-mailbevestiging vereist
+      showAuthInfo('Check je e-mail voor een bevestigingslink!');
+    } else {
+      closeAuthModal();
+      toast('Welkom! Je bent ingelogd.');
+    }
+  }catch(err){
+    const msg=err.message||'Er ging iets mis.';
+    showAuthError(
+      msg.includes('Invalid login')?'Onjuist e-mailadres of wachtwoord.':
+      msg.includes('already registered')?'Dit e-mailadres is al in gebruik.':
+      msg
+    );
+  }finally{
+    $('auth-submit').disabled=false;
+    $('auth-submit').textContent=authMode==='login'?'Inloggen':'Account aanmaken';
+  }
+}
+
+function showAuthError(msg){$('auth-error').textContent=msg;$('auth-error').className='visible'}
+function showAuthInfo(msg){$('auth-info').textContent=msg;$('auth-info').className='visible'}
+
+async function signOut(){
+  await sb.auth.signOut();
+  S.user=null;S.savedRoutes=[];S.loadedRouteId=null;
+  clearPolylines();
+  hideRouteInfo();
+  renderHeaderAuth();
+  renderSavedRoutes();
+  toast('Je bent uitgelogd.');
+}
+
+function clearPolylines(){
+  Object.values(savedPolylines).forEach(p=>map.removeLayer(p));
+  savedPolylines={};
+  if(activePolyline){map.removeLayer(activePolyline);activePolyline=null}
+}
+
+// ─── Auth state change ────────────────────────────────────────────────────────
+sb.auth.onAuthStateChange(async(_event, session)=>{
+  S.user=session?.user||null;
+  renderHeaderAuth();
+  if(S.user){
+    await loadRoutesFromDB();
+  } else {
+    S.savedRoutes=[];
+  }
+  renderSavedRoutes();
+});
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
 document.querySelectorAll('.tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');t.setAttribute('aria-selected','false')});
@@ -532,46 +636,36 @@ document.querySelectorAll('.tab').forEach(tab=>{
   });
 });
 
-// ─── Duration pills ──────────────────────────────────────────────────────────
+// ─── Duration pills ───────────────────────────────────────────────────────────
 document.querySelectorAll('#duration-pills .pill').forEach(p=>{
-  const activate = () => {
+  const activate=()=>{
     document.querySelectorAll('#duration-pills .pill').forEach(x=>x.classList.remove('active'));
     p.classList.add('active');
-    if(p.dataset.min==='custom'){
-      $('custom-dur-wrap').style.display='flex';
-      S.durationMin=parseInt($('custom-dur').value);
-    } else {
-      $('custom-dur-wrap').style.display='none';
-      S.durationMin=parseInt(p.dataset.min);
-    }
+    if(p.dataset.min==='custom'){$('custom-dur-wrap').style.display='flex';S.durationMin=parseInt($('custom-dur').value)}
+    else{$('custom-dur-wrap').style.display='none';S.durationMin=parseInt(p.dataset.min)}
   };
-  p.addEventListener('click', activate);
-  p.addEventListener('keydown', e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate()}});
+  p.addEventListener('click',activate);
+  p.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate()}});
 });
-$('custom-dur').addEventListener('input',e=>{
-  S.durationMin=parseInt(e.target.value);
-  $('custom-dur-val').textContent=e.target.value;
-});
+$('custom-dur').addEventListener('input',e=>{S.durationMin=parseInt(e.target.value);$('custom-dur-val').textContent=e.target.value});
 
-// ─── Route types ─────────────────────────────────────────────────────────────
+// ─── Route types ──────────────────────────────────────────────────────────────
 document.querySelectorAll('.type-card').forEach(c=>{
-  const activate = () => {
+  const activate=()=>{
     document.querySelectorAll('.type-card').forEach(x=>x.classList.remove('active'));
-    c.classList.add('active');
-    S.routeType=c.dataset.type;
+    c.classList.add('active');S.routeType=c.dataset.type;
   };
-  c.addEventListener('click', activate);
-  c.addEventListener('keydown', e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate()}});
+  c.addEventListener('click',activate);
+  c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate()}});
 });
 
-// ─── Starting point ──────────────────────────────────────────────────────────
+// ─── Starting point ───────────────────────────────────────────────────────────
 function setStart(lat,lng,label){
   S.start=[lat,lng];
   if(startMarker) map.removeLayer(startMarker);
   startMarker=L.marker([lat,lng],{icon:startIcon,zIndexOffset:1000}).addTo(map)
     .bindPopup(`<b>Start:</b> ${label||lat.toFixed(5)+', '+lng.toFixed(5)}`);
-  const el=$('start-display');
-  el.style.display='flex';
+  $('start-display').style.display='flex';
   $('start-label').textContent=label||`${lat.toFixed(4)}, ${lng.toFixed(4)}`;
   map.setView([lat,lng],14);
 }
@@ -588,27 +682,21 @@ async function geocode(){
     setStart(parseFloat(data[0].lat),parseFloat(data[0].lon),data[0].display_name.split(',')[0]);
   }catch{toast('Zoeken mislukt','error')}
 }
-
 $('btn-myloc').addEventListener('click',()=>{
   if(!navigator.geolocation){toast('Geolocatie niet ondersteund','error');return}
-  navigator.geolocation.getCurrentPosition(pos=>{
-    setStart(pos.coords.latitude,pos.coords.longitude,'Mijn locatie');
-  },()=>toast('Kon locatie niet ophalen','error'));
+  navigator.geolocation.getCurrentPosition(
+    pos=>setStart(pos.coords.latitude,pos.coords.longitude,'Mijn locatie'),
+    ()=>toast('Kon locatie niet ophalen','error')
+  );
 });
-
 $('btn-pick').addEventListener('click',()=>{
-  S.pickMode=true;
-  $('pick-hint').style.display='block';
-  map.getContainer().style.cursor='crosshair';
+  S.pickMode=true;$('pick-hint').style.display='block';map.getContainer().style.cursor='crosshair';
 });
 map.on('click',e=>{
   if(!S.pickMode)return;
-  S.pickMode=false;
-  $('pick-hint').style.display='none';
-  map.getContainer().style.cursor='';
+  S.pickMode=false;$('pick-hint').style.display='none';map.getContainer().style.cursor='';
   setStart(e.latlng.lat,e.latlng.lng);
 });
-
 $('btn-center').addEventListener('click',()=>{
   if(S.start)map.setView(S.start,14);
   else if(activePolyline)map.fitBounds(activePolyline.getBounds(),{padding:[40,40]});
@@ -616,150 +704,131 @@ $('btn-center').addEventListener('click',()=>{
 
 // ─── Route generation ─────────────────────────────────────────────────────────
 const typeSpeed={scenic:55,flat:80,hilly:50,mixed:65,loop:60,oneway:70};
-const typeLabels={scenic:'Schilderachtig',flat:'Vlak',hilly:'Heuvelachtig',mixed:'Gemengd',loop:'Lus',oneway:'Eenrichtings'};
-
 const BOUNDS={minLat:49.5,maxLat:55.1,minLng:2.5,maxLng:15.1};
 function clampToBounds(lat,lng){
-  return [
-    Math.max(BOUNDS.minLat,Math.min(BOUNDS.maxLat,lat)),
-    Math.max(BOUNDS.minLng,Math.min(BOUNDS.maxLng,lng))
-  ];
+  return [Math.max(BOUNDS.minLat,Math.min(BOUNDS.maxLat,lat)),Math.max(BOUNDS.minLng,Math.min(BOUNDS.maxLng,lng))];
 }
-
-function estimateDistance(durationMin,type){
-  return (typeSpeed[type]||15) * (durationMin/60);
-}
-
+function estimateDistance(durationMin,type){return(typeSpeed[type]||60)*(durationMin/60)}
 function makeWaypoints(lat,lng,distKm,type,filters){
-  const R=0.009;
-  const spread=distKm/(2*Math.PI*1.3)*R;
-  const pts=[];
-  const baseAngles={
-    scenic:[40,130,230],flat:[70,180,290],hilly:[30,120,240],
-    mixed:[60,160,280],loop:[45,165,285],oneway:[50,150,250]
-  };
+  const R=0.009,spread=distKm/(2*Math.PI*1.3)*R,pts=[];
+  const baseAngles={scenic:[40,130,230],flat:[70,180,290],hilly:[30,120,240],mixed:[60,160,280],loop:[45,165,285],oneway:[50,150,250]};
   const angles=baseAngles[type]||[60,180,300];
   for(let i=0;i<angles.length;i++){
-    const jitter=(Math.random()-.5)*35;
-    const a=(angles[i]+jitter)*(Math.PI/180);
-    const d=spread*(0.5+Math.random()*0.9);
-    const busyOff=filters.busy?15:0;
-    const finalA=a+busyOff*(Math.PI/180);
-    const clamped=clampToBounds(lat+Math.sin(finalA)*d, lng+Math.cos(finalA)*d);
-    pts.push(clamped);
+    const jitter=(Math.random()-.5)*35,a=(angles[i]+jitter)*(Math.PI/180);
+    const d=spread*(0.5+Math.random()*0.9),busyOff=filters.busy?15:0,finalA=a+busyOff*(Math.PI/180);
+    pts.push(clampToBounds(lat+Math.sin(finalA)*d,lng+Math.cos(finalA)*d));
   }
-  pts.push([lat,lng]);
-  return pts;
+  pts.push([lat,lng]);return pts;
 }
-
-function formatDist(m){
-  return m>=1000?`${(m/1000).toFixed(1)} km`:`${Math.round(m)} m`;
-}
-function formatDur(s){
-  const m=Math.round(s/60);
-  return m>=60?`${Math.floor(m/60)}u ${m%60}m`:`${m} min`;
-}
+function formatDist(m){return m>=1000?`${(m/1000).toFixed(1)} km`:`${Math.round(m)} m`}
+function formatDur(s){const m=Math.round(s/60);return m>=60?`${Math.floor(m/60)}u ${m%60}m`:`${m} min`}
 
 $('btn-generate').addEventListener('click',generateRoute);
 async function generateRoute(){
   if(!S.start){toast('Stel eerst een startpunt in','error');return}
-  const [lat,lng]=S.start;
-  const type=S.routeType;
-  const dur=S.durationMin;
-  const filters={
-    highway:$('f-highway').checked,
-    busy:$('f-busy').checked,
-    unpaved:$('f-unpaved').checked,
-    dirt:$('f-dirt').checked,
-  };
-
-  setLoading(true);
-  hideRouteInfo();
+  const [lat,lng]=S.start,type=S.routeType,dur=S.durationMin;
+  const filters={highway:$('f-highway').checked,busy:$('f-busy').checked,unpaved:$('f-unpaved').checked,dirt:$('f-dirt').checked};
+  setLoading(true);hideRouteInfo();
   if(activePolyline){map.removeLayer(activePolyline);activePolyline=null}
-
-  const distKm=estimateDistance(dur,type);
-  const wps=makeWaypoints(lat,lng,distKm,type,filters);
-  const allPoints=[[lat,lng],...wps];
-  const coords=allPoints.map(p=>p[1]+','+p[0]).join(';');
-  const url=`https://router.project-osrm.org/route/v1/car/${coords}?overview=full&geometries=geojson&steps=false`;
-
+  const wps=makeWaypoints(lat,lng,estimateDistance(dur,type),type,filters);
+  const coords=[[lat,lng],...wps].map(p=>p[1]+','+p[0]).join(';');
   try{
-    const r=await fetch(url);
+    const r=await fetch(`https://router.project-osrm.org/route/v1/car/${coords}?overview=full&geometries=geojson&steps=false`);
     const data=await r.json();
-    if(data.code!=='Ok'||!data.routes?.length) throw new Error('No route');
-    const route=data.routes[0];
-    const lls=route.geometry.coordinates.map(c=>[c[1],c[0]]);
-
-    activePolyline=L.polyline(lls,{
-      color:'#4f8cff',weight:5,opacity:.9,
-      dashArray:type==='oneway'?'10 6':null,
-      lineCap:'round',lineJoin:'round'
-    }).addTo(map);
+    if(data.code!=='Ok'||!data.routes?.length)throw new Error('No route');
+    const route=data.routes[0],lls=route.geometry.coordinates.map(c=>[c[1],c[0]]);
+    activePolyline=L.polyline(lls,{color:'#4f8cff',weight:5,opacity:.9,dashArray:type==='oneway'?'10 6':null,lineCap:'round',lineJoin:'round'}).addTo(map);
     map.fitBounds(activePolyline.getBounds(),{padding:[40,40]});
-
     S.currentRoute={coords:lls,dist:route.distance,dur:route.duration,type,durationMin:dur,filters,start:S.start};
     showRouteInfo(formatDist(route.distance),formatDur(route.duration),typeLabels[type]||type);
     $('route-name-input').value='';
     toast('Route gegenereerd!');
   }catch(e){
-    toast('Kon geen route genereren. Probeer een ander startpunt.','error');
-    console.error(e);
-  }finally{
-    setLoading(false);
-  }
+    toast('Kon geen route genereren. Probeer een ander startpunt.','error');console.error(e);
+  }finally{setLoading(false)}
 }
 
-// ─── Surprise me ─────────────────────────────────────────────────────────────
 $('btn-surprise').addEventListener('click',()=>{
   const types=['scenic','flat','hilly','mixed','loop','oneway'];
   const type=types[Math.floor(Math.random()*types.length)];
-  const durations=[30,45,60,90,120];
-  const dur=durations[Math.floor(Math.random()*durations.length)];
-
+  const durations=[30,45,60,90,120],dur=durations[Math.floor(Math.random()*durations.length)];
   document.querySelectorAll('.type-card').forEach(c=>c.classList.toggle('active',c.dataset.type===type));
-  document.querySelectorAll('#duration-pills .pill').forEach(p=>{
-    p.classList.toggle('active',parseInt(p.dataset.min)===dur);
-  });
+  document.querySelectorAll('#duration-pills .pill').forEach(p=>p.classList.toggle('active',parseInt(p.dataset.min)===dur));
   $('custom-dur-wrap').style.display='none';
   S.routeType=type;S.durationMin=dur;
   ['f-highway','f-busy','f-unpaved','f-dirt'].forEach(id=>{$(id).checked=Math.random()>.4});
-
   toast(`Willekeurig: ${typeLabels[type]} · ${dur} min`);
-  if(S.start) generateRoute();
+  if(S.start)generateRoute();
   else toast('Stel een startpunt in en klik daarna op Verras me!','error');
 });
 
-// ─── Save routes ──────────────────────────────────────────────────────────────
-$('btn-save').addEventListener('click',saveRoute);
+// ─── Save routes (Supabase) ───────────────────────────────────────────────────
+$('btn-save').addEventListener('click', saveRoute);
 $('btn-discard').addEventListener('click',()=>{hideRouteInfo();S.currentRoute=null});
 
-function saveRoute(){
+async function saveRoute(){
   if(!S.currentRoute){toast('Genereer eerst een route','error');return}
+  if(!S.user){openAuthModal();return}
+
   const name=$('route-name-input').value.trim()||`Route ${new Date().toLocaleDateString('nl-NL')}`;
-  const id=Date.now().toString();
-  const route={id,name,coords:S.currentRoute.coords,dist:S.currentRoute.dist,
-    dur:S.currentRoute.dur,type:S.currentRoute.type,date:new Date().toISOString(),start:S.currentRoute.start};
-  S.savedRoutes.unshift(route);
-  persistRoutes();renderSavedRoutes();
+  $('btn-save').disabled=true;
+  $('btn-save').innerHTML='<span class="spinner"></span>';
+
+  const{data,error}=await sb.from('routes').insert({
+    user_id:S.user.id,
+    name,
+    coords:S.currentRoute.coords,
+    dist:S.currentRoute.dist,
+    dur:S.currentRoute.dur,
+    type:S.currentRoute.type,
+    start_point:S.currentRoute.start,
+  }).select().single();
+
+  $('btn-save').disabled=false;
+  $('btn-save').innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Opslaan`;
+
+  if(error){toast('Opslaan mislukt','error');console.error(error);return}
+
+  S.savedRoutes.unshift(normalizeRoute(data));
+  renderSavedRoutes();
   toast(`Opgeslagen: "${name}"`);
   hideRouteInfo();
-  document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');t.setAttribute('aria-selected','false')});
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelector('.tab[data-tab="saved"]').classList.add('active');
-  document.querySelector('.tab[data-tab="saved"]').setAttribute('aria-selected','true');
-  $('panel-saved').classList.add('active');
+  switchToSaved();
 }
 
-function persistRoutes(){localStorage.setItem('bike_routes',JSON.stringify(S.savedRoutes))}
-function loadRoutes(){
-  try{const d=localStorage.getItem('bike_routes');if(d) S.savedRoutes=JSON.parse(d)}catch{}
+async function loadRoutesFromDB(){
+  const{data,error}=await sb.from('routes').select('*').order('created_at',{ascending:false});
+  if(error){console.error(error);return}
+  S.savedRoutes=(data||[]).map(normalizeRoute);
 }
 
-const trashIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
+function normalizeRoute(r){
+  return{id:r.id,name:r.name,coords:r.coords,dist:r.dist,dur:r.dur,type:r.type,start:r.start_point,date:r.created_at};
+}
+
+async function deleteRoute(id){
+  if(S.user){
+    const{error}=await sb.from('routes').delete().eq('id',id);
+    if(error){toast('Verwijderen mislukt','error');return}
+  }
+  if(savedPolylines[id]){map.removeLayer(savedPolylines[id]);delete savedPolylines[id]}
+  if(S.loadedRouteId===id){S.loadedRouteId=null;hideRouteInfo()}
+  S.savedRoutes=S.savedRoutes.filter(r=>r.id!==id);
+  renderSavedRoutes();
+  toast('Route verwijderd');
+}
 
 function renderSavedRoutes(){
   const list=$('routes-list');
   list.innerHTML='';
+
+  if(!S.user){
+    $('auth-prompt').classList.add('visible');
+    $('no-routes').style.display='none';
+    return;
+  }
+  $('auth-prompt').classList.remove('visible');
+
   if(!S.savedRoutes.length){$('no-routes').style.display='flex';return}
   $('no-routes').style.display='none';
 
@@ -785,8 +854,7 @@ function renderSavedRoutes(){
   Object.values(savedPolylines).forEach(p=>map.removeLayer(p));
   savedPolylines={};
   S.savedRoutes.forEach(r=>{
-    const pl=L.polyline(r.coords,{color:'#a78bfa',weight:3,opacity:.4,dashArray:'6 4'}).addTo(map);
-    savedPolylines[r.id]=pl;
+    savedPolylines[r.id]=L.polyline(r.coords,{color:'#a78bfa',weight:3,opacity:.4,dashArray:'6 4'}).addTo(map);
   });
 }
 
@@ -802,20 +870,18 @@ function loadSavedRoute(r){
   toast(`Geladen: ${r.name}`);
 }
 
-function deleteRoute(id){
-  S.savedRoutes=S.savedRoutes.filter(r=>r.id!==id);
-  if(savedPolylines[id]){map.removeLayer(savedPolylines[id]);delete savedPolylines[id]}
-  if(S.loadedRouteId===id){S.loadedRouteId=null;hideRouteInfo()}
-  persistRoutes();renderSavedRoutes();
-  toast('Route verwijderd');
+function switchToSaved(){
+  document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');t.setAttribute('aria-selected','false')});
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.tab[data-tab="saved"]').classList.add('active');
+  document.querySelector('.tab[data-tab="saved"]').setAttribute('aria-selected','true');
+  $('panel-saved').classList.add('active');
 }
 
-function escHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-
-// ─── Init ────────────────────────────────────────────────────────────────────
-loadRoutes();
+// ─── Init ─────────────────────────────────────────────────────────────────────
+renderHeaderAuth();
 renderSavedRoutes();
-setTimeout(()=>{map.invalidateSize()},100);
+setTimeout(()=>map.invalidateSize(),100);
 </script>
 </body>
 </html>
