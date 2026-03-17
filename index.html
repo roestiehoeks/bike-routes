@@ -10,13 +10,17 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3350;
+  --bg:#0b0d14;--surface:#13161f;--surface2:#1c2030;--border:#252a3d;
   --accent:#4f8cff;--accent2:#a78bfa;--green:#22c55e;--orange:#f59e0b;
-  --red:#f87171;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --red:#f87171;--text:#e2e8f0;--text2:#94a3b8;--text3:#4e5a72;
   --sidebar:340px;--radius:12px;--radius-sm:8px;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
 }
 html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
 a{color:var(--accent)}
+
+/* ─── Focus styles (accessibility) ─── */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 
 /* ─── Layout ─── */
 #app{display:flex;height:100vh;overflow:hidden}
@@ -28,13 +32,30 @@ a{color:var(--accent)}
 #map-wrap{flex:1;position:relative}
 #map{width:100%;height:100%}
 
+/* ─── App header ─── */
+#app-header{
+  padding:14px 16px 12px;border-bottom:1px solid var(--border);flex-shrink:0;
+  display:flex;align-items:center;gap:10px;
+}
+#app-header .logo{
+  width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+#app-header .logo svg{color:#fff}
+#app-header .app-title{font-size:15px;font-weight:700;color:var(--text);line-height:1.1}
+#app-header .app-sub{font-size:11px;color:var(--text3);font-weight:400}
+
 /* ─── Sidebar tabs ─── */
 #tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
-.tab{flex:1;padding:13px 6px;font-size:12px;font-weight:600;text-align:center;
+.tab{
+  flex:1;padding:11px 6px;font-size:12px;font-weight:600;text-align:center;
   cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;
-  transition:all .2s;letter-spacing:.03em;user-select:none}
+  transition:color .2s,border-color .2s;letter-spacing:.03em;user-select:none;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
 .tab:hover{color:var(--text2)}
 .tab.active{color:var(--accent);border-color:var(--accent)}
+.tab svg{flex-shrink:0}
 
 /* ─── Panel ─── */
 .panel{flex:1;overflow-y:auto;display:none;padding:16px;gap:12px;flex-direction:column}
@@ -43,7 +64,10 @@ a{color:var(--accent)}
 .panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
 /* ─── Section ─── */
-.section{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px}
+.section{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;display:flex;flex-direction:column;gap:10px;
+}
 .section-title{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
 
 /* ─── Form controls ─── */
@@ -51,8 +75,11 @@ label{font-size:13px;color:var(--text2);font-weight:500;display:block;margin-bot
 input[type=text],input[type=number],select,textarea{
   width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
   color:var(--text);font-family:inherit;font-size:13px;padding:9px 12px;outline:none;
-  transition:border-color .2s}
-input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--accent)}
+  transition:border-color .2s,box-shadow .2s;
+}
+input[type=text]:focus,input[type=number]:focus,select:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,140,255,.12);
+}
 input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 
 /* ─── Duration pills ─── */
@@ -60,123 +87,168 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 .pill{
   padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
   border:1px solid var(--border);background:var(--bg);color:var(--text2);
-  cursor:pointer;transition:all .2s;user-select:none}
-.pill:hover{border-color:var(--accent);color:var(--accent)}
+  cursor:pointer;transition:all .2s;user-select:none;
+}
+.pill:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,140,255,.06)}
 .pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
 
 /* ─── Route type cards ─── */
 .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .type-card{
   border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:10px 8px;text-align:center;cursor:pointer;background:var(--bg);
-  transition:all .2s;user-select:none}
-.type-card:hover{border-color:var(--accent)}
-.type-card.active{border-color:var(--accent);background:rgba(79,140,255,.12)}
-.type-card .icon{font-size:18px;margin-bottom:4px}
-.type-card .label{font-size:11px;font-weight:600;color:var(--text2)}
+  padding:12px 8px;text-align:center;cursor:pointer;background:var(--bg);
+  transition:all .2s;user-select:none;position:relative;overflow:hidden;
+}
+.type-card:hover{border-color:var(--accent);background:rgba(79,140,255,.05)}
+.type-card.active{border-color:var(--accent);background:rgba(79,140,255,.1)}
+.type-card.active::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+}
+.type-card .icon{
+  width:22px;height:22px;margin:0 auto 6px;color:var(--text3);
+  transition:color .2s;
+}
+.type-card:hover .icon{color:var(--accent)}
+.type-card.active .icon{color:var(--accent)}
+.type-card .label{font-size:11px;font-weight:600;color:var(--text2);transition:color .2s}
 .type-card.active .label{color:var(--accent)}
 
 /* ─── Toggles ─── */
-.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.toggle-row span{font-size:13px;color:var(--text2);font-weight:500}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px}
+.toggle-label{font-size:13px;color:var(--text2);font-weight:500;display:flex;align-items:center;gap:8px}
+.toggle-label svg{color:var(--text3);flex-shrink:0}
 .toggle{position:relative;width:38px;height:22px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
 .toggle-slider{
-  position:absolute;inset:0;background:#2e3350;border-radius:11px;cursor:pointer;
-  transition:.2s}
+  position:absolute;inset:0;background:#252a3d;border-radius:11px;cursor:pointer;
+  transition:.2s;}
 .toggle-slider:before{
   content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;
-  border-radius:50%;background:#fff;transition:.2s}
+  border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
 .toggle input:checked+.toggle-slider{background:var(--accent)}
 .toggle input:checked+.toggle-slider:before{transform:translateX(16px)}
 
 /* ─── Buttons ─── */
 .btn{
-  width:100%;padding:12px;border-radius:var(--radius-sm);border:none;
-  font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
-  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
-.btn-primary:active{transform:none}
+  width:100%;padding:11px 16px;border-radius:var(--radius-sm);border:none;
+  font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.btn svg{flex-shrink:0}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+  box-shadow:0 2px 12px rgba(79,140,255,.3);
+}
+.btn-primary:hover{box-shadow:0 4px 20px rgba(79,140,255,.45);transform:translateY(-1px)}
+.btn-primary:active{transform:none;box-shadow:0 2px 8px rgba(79,140,255,.2)}
 .btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
-.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
-.btn-danger{background:transparent;border:1px solid var(--red);color:var(--red);padding:7px 12px;font-size:12px;width:auto}
-.btn-danger:hover{background:var(--red);color:#fff}
-.btn-sm{padding:8px 14px;font-size:12px;width:auto}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2);padding:7px 12px;font-size:12px;width:auto}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,140,255,.05)}
+.btn-danger{
+  background:transparent;border:1px solid rgba(248,113,113,.4);color:var(--red);
+  padding:6px 10px;font-size:12px;width:auto;border-radius:6px;
+}
+.btn-danger:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.btn-sm{padding:8px 12px;font-size:12px;width:auto}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2);padding:8px 14px;font-size:12px;width:auto}
 .btn-ghost:hover{border-color:var(--accent2);color:var(--accent2)}
-.btn-surprise{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}
-.btn-surprise:hover{opacity:.9;transform:translateY(-1px)}
+.btn-surprise{
+  background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;
+  box-shadow:0 2px 12px rgba(245,158,11,.25);
+}
+.btn-surprise:hover{box-shadow:0 4px 20px rgba(245,158,11,.4);transform:translateY(-1px)}
+.btn-surprise:active{transform:none}
+
+/* ─── Location buttons row ─── */
+.loc-btns{display:flex;gap:6px}
+.loc-btns .btn{flex:1;padding:8px 6px;font-size:11px}
 
 /* ─── Route info bar ─── */
 #route-info{
-  display:none;background:var(--surface2);border:1px solid var(--accent);
-  border-radius:var(--radius);padding:12px 16px;
-  flex:0 0 auto;margin:0 16px 8px;flex-direction:column;gap:6px}
+  display:none;background:var(--surface2);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:12px 16px;flex:0 0 auto;flex-direction:column;gap:4px;
+}
 #route-info.visible{display:flex}
-.info-row{display:flex;justify-content:space-between;align-items:center}
-.info-badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(79,140,255,.15);color:var(--accent)}
-.info-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-.info-val{font-size:18px;font-weight:700;color:var(--text)}
+.info-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.info-stat{display:flex;flex-direction:column;gap:2px}
+.info-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:rgba(79,140,255,.12);color:var(--accent)}
+.info-label{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.info-val{font-size:20px;font-weight:700;color:var(--text);line-height:1}
 
 /* ─── Save form ─── */
-#save-form{display:none;flex-direction:column;gap:8px;padding:0 16px 12px}
+#save-form{display:none;flex-direction:column;gap:8px;padding:12px 16px}
 #save-form.visible{display:flex}
 #save-form .row{display:flex;gap:8px}
 
 /* ─── Saved routes ─── */
 .route-item{
   background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:6px}
-.route-item:hover{border-color:var(--accent2)}
-.route-item.loaded{border-color:var(--accent)}
-.route-item-header{display:flex;align-items:center;justify-content:space-between}
+  padding:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:6px;
+}
+.route-item:hover{border-color:var(--accent2);background:rgba(167,139,250,.04)}
+.route-item.loaded{border-color:var(--accent);background:rgba(79,140,255,.04)}
+.route-item-header{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .route-name{font-size:14px;font-weight:600;color:var(--text)}
 .route-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.route-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.route-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px}
 .badge-type{background:rgba(167,139,250,.15);color:var(--accent2)}
 .badge-dist{background:rgba(34,197,94,.12);color:var(--green)}
 .badge-dur{background:rgba(245,158,11,.12);color:var(--orange)}
 .route-date{font-size:11px;color:var(--text3)}
-#no-routes{text-align:center;color:var(--text3);font-size:13px;padding:20px 0}
+#no-routes{
+  text-align:center;color:var(--text3);font-size:13px;padding:32px 16px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+#no-routes svg{color:var(--text3);opacity:.5}
 
 /* ─── Map overlay controls ─── */
 #map-controls{position:absolute;top:14px;right:14px;z-index:999;display:flex;flex-direction:column;gap:8px}
 .map-btn{
   background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-  color:var(--text2);padding:10px 14px;font-family:inherit;font-size:13px;font-weight:600;
-  cursor:pointer;transition:all .2s;white-space:nowrap}
+  color:var(--text2);padding:9px 14px;font-family:inherit;font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:6px;
+  box-shadow:var(--shadow);
+}
 .map-btn:hover{border-color:var(--accent);color:var(--accent)}
 #pick-hint{
   display:none;position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:999;
   background:var(--accent);color:#fff;padding:10px 20px;border-radius:20px;
-  font-size:13px;font-weight:600;pointer-events:none}
+  font-size:13px;font-weight:600;pointer-events:none;box-shadow:0 4px 16px rgba(79,140,255,.4);
+}
+
+/* ─── Start display ─── */
+#start-display{
+  font-size:11px;color:var(--green);display:none;
+  display:none;align-items:center;gap:5px;
+}
+#start-display svg{flex-shrink:0}
 
 /* ─── Spinner ─── */
-.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ─── Toast ─── */
 #toast{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:12px 20px;font-size:13px;font-weight:500;z-index:9999;
-  opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:11px 20px;font-size:13px;font-weight:500;z-index:9999;
+  opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;
+  box-shadow:var(--shadow);
+}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.success{border-color:var(--green);color:var(--green)}
 #toast.error{border-color:var(--red);color:var(--red)}
 
-/* ─── Mobile bottom sheet ─── */
+/* ─── Mobile ─── */
 @media(max-width:768px){
   #app{flex-direction:column-reverse}
-  #sidebar{
-    width:100%;min-width:0;height:auto;max-height:55vh;
-    border-right:none;border-top:1px solid var(--border);
-    position:relative}
+  #sidebar{width:100%;min-width:0;height:auto;max-height:58vh;border-right:none;border-top:1px solid var(--border)}
   #map-wrap{flex:1;min-height:0}
   .panel{padding:12px}
-  #route-info{margin:0 12px 8px}
-  #save-form{padding:0 12px 8px}
+  #route-info{padding:10px 12px}
+  #save-form{padding:10px 12px}
+  #app-header{padding:10px 12px}
 }
 </style>
 </head>
@@ -184,9 +256,29 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 <div id="app">
   <!-- LEFT SIDEBAR -->
   <div id="sidebar">
+
+    <!-- App header -->
+    <div id="app-header">
+      <div class="logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-title">MotoRoute</div>
+        <div class="app-sub">Nederland · België · Duitsland</div>
+      </div>
+    </div>
+
     <div id="tabs">
-      <div class="tab active" data-tab="plan">🗺 Plan</div>
-      <div class="tab" data-tab="saved">📌 Opgeslagen</div>
+      <div class="tab active" data-tab="plan" role="tab" aria-selected="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>
+        Plan
+      </div>
+      <div class="tab" data-tab="saved" role="tab" aria-selected="false">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+        Opgeslagen
+      </div>
     </div>
 
     <!-- PLAN PANEL -->
@@ -196,29 +288,41 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
       <div class="section">
         <div class="section-title">Vertrekpunt</div>
         <div>
-          <label>Adres of plaats</label>
+          <label for="addr-input">Adres of plaats</label>
           <input type="text" id="addr-input" placeholder="bijv. Amstel 1, Amsterdam" autocomplete="off"/>
         </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-secondary btn-sm" id="btn-geocode">🔍 Zoeken</button>
-          <button class="btn btn-secondary btn-sm" id="btn-pick">📍 Klik op kaart</button>
-          <button class="btn btn-secondary btn-sm" id="btn-myloc">🎯 Mijn locatie</button>
+        <div class="loc-btns">
+          <button class="btn btn-secondary btn-sm" id="btn-geocode" aria-label="Adres zoeken">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Zoeken
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-pick" aria-label="Klik op kaart om startpunt te kiezen">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            Kaart
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-myloc" aria-label="Gebruik mijn huidige locatie">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><circle cx="12" cy="12" r="7"/></svg>
+            Locatie
+          </button>
         </div>
-        <div id="start-display" style="font-size:11px;color:var(--green);display:none"></div>
+        <div id="start-display" style="font-size:11px;color:var(--green);display:none;align-items:center;gap:5px">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="start-label"></span>
+        </div>
       </div>
 
       <!-- Duration -->
       <div class="section">
         <div class="section-title">Duur</div>
         <div class="pill-group" id="duration-pills">
-          <div class="pill" data-min="30">30 min</div>
-          <div class="pill active" data-min="60">1 u</div>
-          <div class="pill" data-min="90">1,5 u</div>
-          <div class="pill" data-min="120">2 u</div>
-          <div class="pill" data-min="custom">Aangepast</div>
+          <div class="pill" data-min="30" role="button" tabindex="0">30 min</div>
+          <div class="pill active" data-min="60" role="button" tabindex="0">1 u</div>
+          <div class="pill" data-min="90" role="button" tabindex="0">1,5 u</div>
+          <div class="pill" data-min="120" role="button" tabindex="0">2 u</div>
+          <div class="pill" data-min="custom" role="button" tabindex="0">Aangepast</div>
         </div>
         <div id="custom-dur-wrap" style="display:none;gap:8px;flex-direction:column">
-          <label>Minuten: <span id="custom-dur-val">45</span></label>
+          <label for="custom-dur">Minuten: <span id="custom-dur-val">45</span></label>
           <input type="range" id="custom-dur" min="10" max="300" value="45" step="5"/>
         </div>
       </div>
@@ -227,12 +331,42 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
       <div class="section">
         <div class="section-title">Routestijl</div>
         <div class="type-grid" id="route-types">
-          <div class="type-card active" data-type="scenic"><div class="icon">🌄</div><div class="label">Schilderachtig</div></div>
-          <div class="type-card" data-type="flat"><div class="icon">🛣</div><div class="label">Vlak</div></div>
-          <div class="type-card" data-type="hilly"><div class="icon">⛰</div><div class="label">Heuvelachtig</div></div>
-          <div class="type-card" data-type="mixed"><div class="icon">🔀</div><div class="label">Gemengd</div></div>
-          <div class="type-card" data-type="loop"><div class="icon">🔁</div><div class="label">Lus</div></div>
-          <div class="type-card" data-type="oneway"><div class="icon">➡️</div><div class="label">Eenrichtings</div></div>
+          <div class="type-card active" data-type="scenic" role="button" tabindex="0">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 15h16L12 3 8 3z"/><path d="m2 20 4-5 4 3 4-6 4 8"/></svg>
+            </div>
+            <div class="label">Schilderachtig</div>
+          </div>
+          <div class="type-card" data-type="flat" role="button" tabindex="0">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M3 8h18"/><path d="M3 16h18"/></svg>
+            </div>
+            <div class="label">Vlak</div>
+          </div>
+          <div class="type-card" data-type="hilly" role="button" tabindex="0">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            </div>
+            <div class="label">Heuvelachtig</div>
+          </div>
+          <div class="type-card" data-type="mixed" role="button" tabindex="0">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/></svg>
+            </div>
+            <div class="label">Gemengd</div>
+          </div>
+          <div class="type-card" data-type="loop" role="button" tabindex="0">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+            </div>
+            <div class="label">Lus</div>
+          </div>
+          <div class="type-card" data-type="oneway" role="button" tabindex="0">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+            <div class="label">Eenrichtings</div>
+          </div>
         </div>
       </div>
 
@@ -240,38 +374,54 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
       <div class="section">
         <div class="section-title">Wegfilters</div>
         <div class="toggle-row">
-          <span>⛔ Vermijd snelwegen</span>
+          <span class="toggle-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            Vermijd snelwegen
+          </span>
           <label class="toggle"><input type="checkbox" id="f-highway" checked/><span class="toggle-slider"></span></label>
         </div>
         <div class="toggle-row">
-          <span>🚗 Vermijd drukke wegen</span>
+          <span class="toggle-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Vermijd drukke wegen
+          </span>
           <label class="toggle"><input type="checkbox" id="f-busy"/><span class="toggle-slider"></span></label>
         </div>
         <div class="toggle-row">
-          <span>🪨 Vermijd onverharde paden</span>
+          <span class="toggle-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Vermijd onverharde paden
+          </span>
           <label class="toggle"><input type="checkbox" id="f-unpaved" checked/><span class="toggle-slider"></span></label>
         </div>
         <div class="toggle-row">
-          <span>🌿 Vermijd grindpaden</span>
+          <span class="toggle-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+            Vermijd grindpaden
+          </span>
           <label class="toggle"><input type="checkbox" id="f-dirt" checked/><span class="toggle-slider"></span></label>
         </div>
       </div>
 
       <!-- Actions -->
       <button class="btn btn-primary" id="btn-generate">
-        <span class="btn-label">🏍 Genereer route</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+        <span class="btn-label">Genereer route</span>
       </button>
-      <button class="btn btn-surprise" id="btn-surprise">🎲 Verras me!</button>
+      <button class="btn btn-surprise" id="btn-surprise">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/></svg>
+        Verras me!
+      </button>
     </div>
 
-    <!-- Route info + save (between tabs and route, outside scroll) -->
+    <!-- Route info + save -->
     <div id="route-info">
       <div class="info-row">
-        <div>
+        <div class="info-stat">
           <div class="info-label">Afstand</div>
           <div class="info-val" id="info-dist">—</div>
         </div>
-        <div>
+        <div class="info-stat">
           <div class="info-label">Duur</div>
           <div class="info-val" id="info-dur">—</div>
         </div>
@@ -281,14 +431,20 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
     <div id="save-form">
       <input type="text" id="route-name-input" placeholder="Geef deze route een naam…" maxlength="40"/>
       <div class="row">
-        <button class="btn btn-primary btn-sm" id="btn-save">💾 Opslaan</button>
+        <button class="btn btn-primary btn-sm" id="btn-save">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Opslaan
+        </button>
         <button class="btn btn-ghost btn-sm" id="btn-discard">Verwijderen</button>
       </div>
     </div>
 
     <!-- SAVED PANEL -->
     <div id="panel-saved" class="panel">
-      <div id="no-routes">Nog geen opgeslagen routes.<br/>Genereer een route en sla hem op!</div>
+      <div id="no-routes">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>
+        Nog geen opgeslagen routes.<br/>Genereer een route en sla hem op!
+      </div>
       <div id="routes-list" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
   </div>
@@ -298,22 +454,25 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
     <div id="map"></div>
     <div id="pick-hint">Klik op de kaart om je startpunt in te stellen</div>
     <div id="map-controls">
-      <button class="map-btn" id="btn-center">⊕ Hercentreren</button>
+      <button class="map-btn" id="btn-center" aria-label="Hercentreren op route">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><circle cx="12" cy="12" r="7"/></svg>
+        Hercentreren
+      </button>
     </div>
   </div>
 </div>
 
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.js"></script>
 <script>
 // ─── State ───────────────────────────────────────────────────────────────────
 const S = {
-  start: null,           // [lat, lng]
+  start: null,
   durationMin: 60,
   routeType: 'scenic',
   filters: {},
-  currentRoute: null,    // {coords, dist, dur}
+  currentRoute: null,
   savedRoutes: [],
   pickMode: false,
   loadedRouteId: null,
@@ -331,16 +490,10 @@ let startMarker = null;
 let activePolyline = null;
 let savedPolylines = {};
 
-// Marker icons
 const startIcon = L.divIcon({
   className:'',
-  html:`<div style="background:var(--accent);width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px #0008"></div>`,
+  html:`<div style="background:#4f8cff;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px #0008"></div>`,
   iconSize:[14,14],iconAnchor:[7,7]
-});
-const endIcon = L.divIcon({
-  className:'',
-  html:`<div style="background:var(--red);width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px #0008"></div>`,
-  iconSize:[12,12],iconAnchor:[6,6]
 });
 
 // ─── UI helpers ──────────────────────────────────────────────────────────────
@@ -349,10 +502,13 @@ function toast(msg,type='success'){
   const t=$('toast');t.textContent=msg;t.className='show '+(type||'');
   clearTimeout(t._t);t._t=setTimeout(()=>t.className='',2800);
 }
+
+const generateIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>`;
+
 function setLoading(on){
   const btn=$('btn-generate');
   if(on){btn.innerHTML='<span class="spinner"></span> Genereren…';btn.disabled=true}
-  else{btn.innerHTML='<span class="btn-label">🏍 Genereer route</span>';btn.disabled=false}
+  else{btn.innerHTML=`${generateIcon}<span class="btn-label">Genereer route</span>`;btn.disabled=false}
 }
 function showRouteInfo(dist,dur,type){
   $('info-dist').textContent=dist;
@@ -369,15 +525,16 @@ function hideRouteInfo(){
 // ─── Tabs ────────────────────────────────────────────────────────────────────
 document.querySelectorAll('.tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
-    document.querySelectorAll('.tab,.panel').forEach(el=>el.classList.remove('active'));
-    tab.classList.add('active');
+    document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');t.setAttribute('aria-selected','false')});
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');tab.setAttribute('aria-selected','true');
     $('panel-'+tab.dataset.tab).classList.add('active');
   });
 });
 
 // ─── Duration pills ──────────────────────────────────────────────────────────
 document.querySelectorAll('#duration-pills .pill').forEach(p=>{
-  p.addEventListener('click',()=>{
+  const activate = () => {
     document.querySelectorAll('#duration-pills .pill').forEach(x=>x.classList.remove('active'));
     p.classList.add('active');
     if(p.dataset.min==='custom'){
@@ -387,7 +544,9 @@ document.querySelectorAll('#duration-pills .pill').forEach(p=>{
       $('custom-dur-wrap').style.display='none';
       S.durationMin=parseInt(p.dataset.min);
     }
-  });
+  };
+  p.addEventListener('click', activate);
+  p.addEventListener('keydown', e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate()}});
 });
 $('custom-dur').addEventListener('input',e=>{
   S.durationMin=parseInt(e.target.value);
@@ -396,11 +555,13 @@ $('custom-dur').addEventListener('input',e=>{
 
 // ─── Route types ─────────────────────────────────────────────────────────────
 document.querySelectorAll('.type-card').forEach(c=>{
-  c.addEventListener('click',()=>{
+  const activate = () => {
     document.querySelectorAll('.type-card').forEach(x=>x.classList.remove('active'));
     c.classList.add('active');
     S.routeType=c.dataset.type;
-  });
+  };
+  c.addEventListener('click', activate);
+  c.addEventListener('keydown', e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate()}});
 });
 
 // ─── Starting point ──────────────────────────────────────────────────────────
@@ -409,8 +570,9 @@ function setStart(lat,lng,label){
   if(startMarker) map.removeLayer(startMarker);
   startMarker=L.marker([lat,lng],{icon:startIcon,zIndexOffset:1000}).addTo(map)
     .bindPopup(`<b>Start:</b> ${label||lat.toFixed(5)+', '+lng.toFixed(5)}`);
-  $('start-display').style.display='block';
-  $('start-display').textContent='📍 '+(label||`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+  const el=$('start-display');
+  el.style.display='flex';
+  $('start-label').textContent=label||`${lat.toFixed(4)}, ${lng.toFixed(4)}`;
   map.setView([lat,lng],14);
 }
 
@@ -434,7 +596,6 @@ $('btn-myloc').addEventListener('click',()=>{
   },()=>toast('Kon locatie niet ophalen','error'));
 });
 
-// Pick on map
 $('btn-pick').addEventListener('click',()=>{
   S.pickMode=true;
   $('pick-hint').style.display='block';
@@ -448,20 +609,15 @@ map.on('click',e=>{
   setStart(e.latlng.lat,e.latlng.lng);
 });
 
-// Recenter
 $('btn-center').addEventListener('click',()=>{
   if(S.start)map.setView(S.start,14);
   else if(activePolyline)map.fitBounds(activePolyline.getBounds(),{padding:[40,40]});
 });
 
 // ─── Route generation ─────────────────────────────────────────────────────────
-// Gemiddelde motorsnelheid (km/h) per routestijl
 const typeSpeed={scenic:55,flat:80,hilly:50,mixed:65,loop:60,oneway:70};
-
-// Nederlandse namen per routetype
 const typeLabels={scenic:'Schilderachtig',flat:'Vlak',hilly:'Heuvelachtig',mixed:'Gemengd',loop:'Lus',oneway:'Eenrichtings'};
 
-// Bounding box voor Nederland, Duitsland en België
 const BOUNDS={minLat:49.5,maxLat:55.1,minLng:2.5,maxLng:15.1};
 function clampToBounds(lat,lng){
   return [
@@ -471,24 +627,18 @@ function clampToBounds(lat,lng){
 }
 
 function estimateDistance(durationMin,type){
-  return (typeSpeed[type]||15) * (durationMin/60); // km
+  return (typeSpeed[type]||15) * (durationMin/60);
 }
 
-// Generate intermediate waypoints then always close back to start
 function makeWaypoints(lat,lng,distKm,type,filters){
-  const R=0.009; // ~1km in degrees
-  // De route rijdt langs 3 waypoints in een lus: omtrek ≈ 2π*r → r = distKm/(2π)
-  // Extra factor 1.3 voor wegomwegen op echte wegen
+  const R=0.009;
   const spread=distKm/(2*Math.PI*1.3)*R;
   const pts=[];
-
-  // 3 intermediate waypoints spread at different angles per style
   const baseAngles={
     scenic:[40,130,230],flat:[70,180,290],hilly:[30,120,240],
     mixed:[60,160,280],loop:[45,165,285],oneway:[50,150,250]
   };
   const angles=baseAngles[type]||[60,180,300];
-
   for(let i=0;i<angles.length;i++){
     const jitter=(Math.random()-.5)*35;
     const a=(angles[i]+jitter)*(Math.PI/180);
@@ -498,8 +648,7 @@ function makeWaypoints(lat,lng,distKm,type,filters){
     const clamped=clampToBounds(lat+Math.sin(finalA)*d, lng+Math.cos(finalA)*d);
     pts.push(clamped);
   }
-
-  pts.push([lat,lng]); // always close the loop back to start
+  pts.push([lat,lng]);
   return pts;
 }
 
@@ -508,7 +657,7 @@ function formatDist(m){
 }
 function formatDur(s){
   const m=Math.round(s/60);
-  return m>=60?`${Math.floor(m/60)}h ${m%60}m`:`${m} min`;
+  return m>=60?`${Math.floor(m/60)}u ${m%60}m`:`${m} min`;
 }
 
 $('btn-generate').addEventListener('click',generateRoute);
@@ -531,8 +680,6 @@ async function generateRoute(){
   const distKm=estimateDistance(dur,type);
   const wps=makeWaypoints(lat,lng,distKm,type,filters);
   const allPoints=[[lat,lng],...wps];
-
-  // Build OSRM request
   const coords=allPoints.map(p=>p[1]+','+p[0]).join(';');
   const url=`https://router.project-osrm.org/route/v1/car/${coords}?overview=full&geometries=geojson&steps=false`;
 
@@ -542,8 +689,6 @@ async function generateRoute(){
     if(data.code!=='Ok'||!data.routes?.length) throw new Error('No route');
     const route=data.routes[0];
     const lls=route.geometry.coordinates.map(c=>[c[1],c[0]]);
-    const dist=route.distance;
-    const durSec=route.duration;
 
     activePolyline=L.polyline(lls,{
       color:'#4f8cff',weight:5,opacity:.9,
@@ -552,8 +697,8 @@ async function generateRoute(){
     }).addTo(map);
     map.fitBounds(activePolyline.getBounds(),{padding:[40,40]});
 
-    S.currentRoute={coords:lls,dist,dur:durSec,type,durationMin:dur,filters,start:S.start};
-    showRouteInfo(formatDist(dist),formatDur(durSec),typeLabels[type]||type);
+    S.currentRoute={coords:lls,dist:route.distance,dur:route.duration,type,durationMin:dur,filters,start:S.start};
+    showRouteInfo(formatDist(route.distance),formatDur(route.duration),typeLabels[type]||type);
     $('route-name-input').value='';
     toast('Route gegenereerd!');
   }catch(e){
@@ -571,24 +716,15 @@ $('btn-surprise').addEventListener('click',()=>{
   const durations=[30,45,60,90,120];
   const dur=durations[Math.floor(Math.random()*durations.length)];
 
-  // Update UI
-  document.querySelectorAll('.type-card').forEach(c=>{
-    c.classList.toggle('active',c.dataset.type===type);
-  });
+  document.querySelectorAll('.type-card').forEach(c=>c.classList.toggle('active',c.dataset.type===type));
   document.querySelectorAll('#duration-pills .pill').forEach(p=>{
-    const match=parseInt(p.dataset.min)===dur;
-    p.classList.toggle('active',match);
+    p.classList.toggle('active',parseInt(p.dataset.min)===dur);
   });
   $('custom-dur-wrap').style.display='none';
-
   S.routeType=type;S.durationMin=dur;
+  ['f-highway','f-busy','f-unpaved','f-dirt'].forEach(id=>{$(id).checked=Math.random()>.4});
 
-  // Random filter combo
-  ['f-highway','f-busy','f-unpaved','f-dirt'].forEach(id=>{
-    $(id).checked=Math.random()>.4;
-  });
-
-  toast(`🎲 Willekeurig: ${typeLabels[type]} · ${dur} min`);
+  toast(`Willekeurig: ${typeLabels[type]} · ${dur} min`);
   if(S.start) generateRoute();
   else toast('Stel een startpunt in en klik daarna op Verras me!','error');
 });
@@ -601,71 +737,51 @@ function saveRoute(){
   if(!S.currentRoute){toast('Genereer eerst een route','error');return}
   const name=$('route-name-input').value.trim()||`Route ${new Date().toLocaleDateString('nl-NL')}`;
   const id=Date.now().toString();
-  const route={
-    id,name,
-    coords:S.currentRoute.coords,
-    dist:S.currentRoute.dist,
-    dur:S.currentRoute.dur,
-    type:S.currentRoute.type,
-    date:new Date().toISOString(),
-    start:S.currentRoute.start,
-  };
+  const route={id,name,coords:S.currentRoute.coords,dist:S.currentRoute.dist,
+    dur:S.currentRoute.dur,type:S.currentRoute.type,date:new Date().toISOString(),start:S.currentRoute.start};
   S.savedRoutes.unshift(route);
-  persistRoutes();
-  renderSavedRoutes();
-  toast(`💾 Opgeslagen: "${name}"`);
+  persistRoutes();renderSavedRoutes();
+  toast(`Opgeslagen: "${name}"`);
   hideRouteInfo();
-  // Switch to saved tab
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');t.setAttribute('aria-selected','false')});
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelector('.tab[data-tab="saved"]').classList.add('active');
+  document.querySelector('.tab[data-tab="saved"]').setAttribute('aria-selected','true');
   $('panel-saved').classList.add('active');
 }
 
-function persistRoutes(){
-  localStorage.setItem('bike_routes',JSON.stringify(S.savedRoutes));
+function persistRoutes(){localStorage.setItem('bike_routes',JSON.stringify(S.savedRoutes))}
+function loadRoutes(){
+  try{const d=localStorage.getItem('bike_routes');if(d) S.savedRoutes=JSON.parse(d)}catch{}
 }
 
-function loadRoutes(){
-  try{
-    const d=localStorage.getItem('bike_routes');
-    if(d) S.savedRoutes=JSON.parse(d);
-  }catch{}
-}
+const trashIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
 
 function renderSavedRoutes(){
   const list=$('routes-list');
   list.innerHTML='';
-  if(!S.savedRoutes.length){$('no-routes').style.display='block';return}
+  if(!S.savedRoutes.length){$('no-routes').style.display='flex';return}
   $('no-routes').style.display='none';
 
-  S.savedRoutes.forEach((r,i)=>{
+  S.savedRoutes.forEach(r=>{
     const div=document.createElement('div');
     div.className='route-item'+(S.loadedRouteId===r.id?' loaded':'');
     div.innerHTML=`
       <div class="route-item-header">
         <span class="route-name">${escHtml(r.name)}</span>
-        <button class="btn btn-danger" data-id="${r.id}" title="Delete">✕</button>
+        <button class="btn btn-danger" data-id="${r.id}" aria-label="Route verwijderen">${trashIcon}</button>
       </div>
       <div class="route-meta">
-        <span class="route-badge badge-type">${r.type}</span>
+        <span class="route-badge badge-type">${typeLabels[r.type]||r.type}</span>
         <span class="route-badge badge-dist">${formatDist(r.dist)}</span>
         <span class="route-badge badge-dur">${formatDur(r.dur)}</span>
       </div>
       <div class="route-date">${new Date(r.date).toLocaleDateString('nl-NL',{weekday:'short',year:'numeric',month:'short',day:'numeric'})}</div>`;
-
-    div.addEventListener('click',e=>{
-      if(e.target.closest('[data-id]'))return;
-      loadSavedRoute(r);
-    });
-    div.querySelector('[data-id]').addEventListener('click',e=>{
-      e.stopPropagation();
-      deleteRoute(r.id);
-    });
+    div.addEventListener('click',e=>{if(e.target.closest('[data-id]'))return;loadSavedRoute(r)});
+    div.querySelector('[data-id]').addEventListener('click',e=>{e.stopPropagation();deleteRoute(r.id)});
     list.appendChild(div);
   });
 
-  // Draw faint saved polylines
   Object.values(savedPolylines).forEach(p=>map.removeLayer(p));
   savedPolylines={};
   S.savedRoutes.forEach(r=>{
@@ -690,8 +806,7 @@ function deleteRoute(id){
   S.savedRoutes=S.savedRoutes.filter(r=>r.id!==id);
   if(savedPolylines[id]){map.removeLayer(savedPolylines[id]);delete savedPolylines[id]}
   if(S.loadedRouteId===id){S.loadedRouteId=null;hideRouteInfo()}
-  persistRoutes();
-  renderSavedRoutes();
+  persistRoutes();renderSavedRoutes();
   toast('Route verwijderd');
 }
 
