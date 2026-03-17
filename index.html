@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MotoRoute – Genereer & Bewaar Motorroutes</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3350;
+  --accent:#4f8cff;--accent2:#a78bfa;--green:#22c55e;--orange:#f59e0b;
+  --red:#f87171;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --sidebar:340px;--radius:12px;--radius-sm:8px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
+a{color:var(--accent)}
+
+/* ─── Layout ─── */
+#app{display:flex;height:100vh;overflow:hidden}
+#sidebar{
+  width:var(--sidebar);min-width:var(--sidebar);height:100%;
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;z-index:10;
+}
+#map-wrap{flex:1;position:relative}
+#map{width:100%;height:100%}
+
+/* ─── Sidebar tabs ─── */
+#tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{flex:1;padding:13px 6px;font-size:12px;font-weight:600;text-align:center;
+  cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;
+  transition:all .2s;letter-spacing:.03em;user-select:none}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--accent);border-color:var(--accent)}
+
+/* ─── Panel ─── */
+.panel{flex:1;overflow-y:auto;display:none;padding:16px;gap:12px;flex-direction:column}
+.panel.active{display:flex}
+.panel::-webkit-scrollbar{width:4px}.panel::-webkit-scrollbar-track{background:transparent}
+.panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* ─── Section ─── */
+.section{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px}
+.section-title{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+
+/* ─── Form controls ─── */
+label{font-size:13px;color:var(--text2);font-weight:500;display:block;margin-bottom:4px}
+input[type=text],input[type=number],select,textarea{
+  width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text);font-family:inherit;font-size:13px;padding:9px 12px;outline:none;
+  transition:border-color .2s}
+input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+
+/* ─── Duration pills ─── */
+.pill-group{display:flex;flex-wrap:wrap;gap:6px}
+.pill{
+  padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
+  border:1px solid var(--border);background:var(--bg);color:var(--text2);
+  cursor:pointer;transition:all .2s;user-select:none}
+.pill:hover{border-color:var(--accent);color:var(--accent)}
+.pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ─── Route type cards ─── */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.type-card{
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:10px 8px;text-align:center;cursor:pointer;background:var(--bg);
+  transition:all .2s;user-select:none}
+.type-card:hover{border-color:var(--accent)}
+.type-card.active{border-color:var(--accent);background:rgba(79,140,255,.12)}
+.type-card .icon{font-size:18px;margin-bottom:4px}
+.type-card .label{font-size:11px;font-weight:600;color:var(--text2)}
+.type-card.active .label{color:var(--accent)}
+
+/* ─── Toggles ─── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.toggle-row span{font-size:13px;color:var(--text2);font-weight:500}
+.toggle{position:relative;width:38px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{
+  position:absolute;inset:0;background:#2e3350;border-radius:11px;cursor:pointer;
+  transition:.2s}
+.toggle-slider:before{
+  content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;
+  border-radius:50%;background:#fff;transition:.2s}
+.toggle input:checked+.toggle-slider{background:var(--accent)}
+.toggle input:checked+.toggle-slider:before{transform:translateX(16px)}
+
+/* ─── Buttons ─── */
+.btn{
+  width:100%;padding:12px;border-radius:var(--radius-sm);border:none;
+  font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-primary:active{transform:none}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:transparent;border:1px solid var(--red);color:var(--red);padding:7px 12px;font-size:12px;width:auto}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-sm{padding:8px 14px;font-size:12px;width:auto}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2);padding:7px 12px;font-size:12px;width:auto}
+.btn-ghost:hover{border-color:var(--accent2);color:var(--accent2)}
+.btn-surprise{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}
+.btn-surprise:hover{opacity:.9;transform:translateY(-1px)}
+
+/* ─── Route info bar ─── */
+#route-info{
+  display:none;background:var(--surface2);border:1px solid var(--accent);
+  border-radius:var(--radius);padding:12px 16px;
+  flex:0 0 auto;margin:0 16px 8px;flex-direction:column;gap:6px}
+#route-info.visible{display:flex}
+.info-row{display:flex;justify-content:space-between;align-items:center}
+.info-badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(79,140,255,.15);color:var(--accent)}
+.info-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.info-val{font-size:18px;font-weight:700;color:var(--text)}
+
+/* ─── Save form ─── */
+#save-form{display:none;flex-direction:column;gap:8px;padding:0 16px 12px}
+#save-form.visible{display:flex}
+#save-form .row{display:flex;gap:8px}
+
+/* ─── Saved routes ─── */
+.route-item{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:6px}
+.route-item:hover{border-color:var(--accent2)}
+.route-item.loaded{border-color:var(--accent)}
+.route-item-header{display:flex;align-items:center;justify-content:space-between}
+.route-name{font-size:14px;font-weight:600;color:var(--text)}
+.route-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.route-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.badge-type{background:rgba(167,139,250,.15);color:var(--accent2)}
+.badge-dist{background:rgba(34,197,94,.12);color:var(--green)}
+.badge-dur{background:rgba(245,158,11,.12);color:var(--orange)}
+.route-date{font-size:11px;color:var(--text3)}
+#no-routes{text-align:center;color:var(--text3);font-size:13px;padding:20px 0}
+
+/* ─── Map overlay controls ─── */
+#map-controls{position:absolute;top:14px;right:14px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.map-btn{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text2);padding:10px 14px;font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;white-space:nowrap}
+.map-btn:hover{border-color:var(--accent);color:var(--accent)}
+#pick-hint{
+  display:none;position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:999;
+  background:var(--accent);color:#fff;padding:10px 20px;border-radius:20px;
+  font-size:13px;font-weight:600;pointer-events:none}
+
+/* ─── Spinner ─── */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── Toast ─── */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 20px;font-size:13px;font-weight:500;z-index:9999;
+  opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.success{border-color:var(--green);color:var(--green)}
+#toast.error{border-color:var(--red);color:var(--red)}
+
+/* ─── Mobile bottom sheet ─── */
+@media(max-width:768px){
+  #app{flex-direction:column-reverse}
+  #sidebar{
+    width:100%;min-width:0;height:auto;max-height:55vh;
+    border-right:none;border-top:1px solid var(--border);
+    position:relative}
+  #map-wrap{flex:1;min-height:0}
+  .panel{padding:12px}
+  #route-info{margin:0 12px 8px}
+  #save-form{padding:0 12px 8px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- LEFT SIDEBAR -->
+  <div id="sidebar">
+    <div id="tabs">
+      <div class="tab active" data-tab="plan">🗺 Plan</div>
+      <div class="tab" data-tab="saved">📌 Opgeslagen</div>
+    </div>
+
+    <!-- PLAN PANEL -->
+    <div id="panel-plan" class="panel active">
+
+      <!-- Starting location -->
+      <div class="section">
+        <div class="section-title">Vertrekpunt</div>
+        <div>
+          <label>Adres of plaats</label>
+          <input type="text" id="addr-input" placeholder="bijv. Amstel 1, Amsterdam" autocomplete="off"/>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" id="btn-geocode">🔍 Zoeken</button>
+          <button class="btn btn-secondary btn-sm" id="btn-pick">📍 Klik op kaart</button>
+          <button class="btn btn-secondary btn-sm" id="btn-myloc">🎯 Mijn locatie</button>
+        </div>
+        <div id="start-display" style="font-size:11px;color:var(--green);display:none"></div>
+      </div>
+
+      <!-- Duration -->
+      <div class="section">
+        <div class="section-title">Duur</div>
+        <div class="pill-group" id="duration-pills">
+          <div class="pill" data-min="30">30 min</div>
+          <div class="pill active" data-min="60">1 u</div>
+          <div class="pill" data-min="90">1,5 u</div>
+          <div class="pill" data-min="120">2 u</div>
+          <div class="pill" data-min="custom">Aangepast</div>
+        </div>
+        <div id="custom-dur-wrap" style="display:none;gap:8px;flex-direction:column">
+          <label>Minuten: <span id="custom-dur-val">45</span></label>
+          <input type="range" id="custom-dur" min="10" max="300" value="45" step="5"/>
+        </div>
+      </div>
+
+      <!-- Route type -->
+      <div class="section">
+        <div class="section-title">Routestijl</div>
+        <div class="type-grid" id="route-types">
+          <div class="type-card active" data-type="scenic"><div class="icon">🌄</div><div class="label">Schilderachtig</div></div>
+          <div class="type-card" data-type="flat"><div class="icon">🛣</div><div class="label">Vlak</div></div>
+          <div class="type-card" data-type="hilly"><div class="icon">⛰</div><div class="label">Heuvelachtig</div></div>
+          <div class="type-card" data-type="mixed"><div class="icon">🔀</div><div class="label">Gemengd</div></div>
+          <div class="type-card" data-type="loop"><div class="icon">🔁</div><div class="label">Lus</div></div>
+          <div class="type-card" data-type="oneway"><div class="icon">➡️</div><div class="label">Eenrichtings</div></div>
+        </div>
+      </div>
+
+      <!-- Road filters -->
+      <div class="section">
+        <div class="section-title">Wegfilters</div>
+        <div class="toggle-row">
+          <span>⛔ Vermijd snelwegen</span>
+          <label class="toggle"><input type="checkbox" id="f-highway" checked/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span>🚗 Vermijd drukke wegen</span>
+          <label class="toggle"><input type="checkbox" id="f-busy"/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span>🪨 Vermijd onverharde paden</span>
+          <label class="toggle"><input type="checkbox" id="f-unpaved" checked/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span>🌿 Vermijd grindpaden</span>
+          <label class="toggle"><input type="checkbox" id="f-dirt" checked/><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <button class="btn btn-primary" id="btn-generate">
+        <span class="btn-label">🏍 Genereer route</span>
+      </button>
+      <button class="btn btn-surprise" id="btn-surprise">🎲 Verras me!</button>
+    </div>
+
+    <!-- Route info + save (between tabs and route, outside scroll) -->
+    <div id="route-info">
+      <div class="info-row">
+        <div>
+          <div class="info-label">Afstand</div>
+          <div class="info-val" id="info-dist">—</div>
+        </div>
+        <div>
+          <div class="info-label">Duur</div>
+          <div class="info-val" id="info-dur">—</div>
+        </div>
+        <div id="info-type-badge" class="info-badge"></div>
+      </div>
+    </div>
+    <div id="save-form">
+      <input type="text" id="route-name-input" placeholder="Geef deze route een naam…" maxlength="40"/>
+      <div class="row">
+        <button class="btn btn-primary btn-sm" id="btn-save">💾 Opslaan</button>
+        <button class="btn btn-ghost btn-sm" id="btn-discard">Verwijderen</button>
+      </div>
+    </div>
+
+    <!-- SAVED PANEL -->
+    <div id="panel-saved" class="panel">
+      <div id="no-routes">Nog geen opgeslagen routes.<br/>Genereer een route en sla hem op!</div>
+      <div id="routes-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div id="map-wrap">
+    <div id="map"></div>
+    <div id="pick-hint">Klik op de kaart om je startpunt in te stellen</div>
+    <div id="map-controls">
+      <button class="map-btn" id="btn-center">⊕ Hercentreren</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.js"></script>
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const S = {
+  start: null,           // [lat, lng]
+  durationMin: 60,
+  routeType: 'scenic',
+  filters: {},
+  currentRoute: null,    // {coords, dist, dur}
+  savedRoutes: [],
+  pickMode: false,
+  loadedRouteId: null,
+};
+
+// ─── Map setup ───────────────────────────────────────────────────────────────
+const map = L.map('map', {zoomControl:false}).setView([52.3,7.5],7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'© <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors',
+  maxZoom:19
+}).addTo(map);
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+let startMarker = null;
+let activePolyline = null;
+let savedPolylines = {};
+
+// Marker icons
+const startIcon = L.divIcon({
+  className:'',
+  html:`<div style="background:var(--accent);width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px #0008"></div>`,
+  iconSize:[14,14],iconAnchor:[7,7]
+});
+const endIcon = L.divIcon({
+  className:'',
+  html:`<div style="background:var(--red);width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px #0008"></div>`,
+  iconSize:[12,12],iconAnchor:[6,6]
+});
+
+// ─── UI helpers ──────────────────────────────────────────────────────────────
+function $(id){return document.getElementById(id)}
+function toast(msg,type='success'){
+  const t=$('toast');t.textContent=msg;t.className='show '+(type||'');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.className='',2800);
+}
+function setLoading(on){
+  const btn=$('btn-generate');
+  if(on){btn.innerHTML='<span class="spinner"></span> Genereren…';btn.disabled=true}
+  else{btn.innerHTML='<span class="btn-label">🏍 Genereer route</span>';btn.disabled=false}
+}
+function showRouteInfo(dist,dur,type){
+  $('info-dist').textContent=dist;
+  $('info-dur').textContent=dur;
+  $('info-type-badge').textContent=type;
+  $('route-info').classList.add('visible');
+  $('save-form').classList.add('visible');
+}
+function hideRouteInfo(){
+  $('route-info').classList.remove('visible');
+  $('save-form').classList.remove('visible');
+}
+
+// ─── Tabs ────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab,.panel').forEach(el=>el.classList.remove('active'));
+    tab.classList.add('active');
+    $('panel-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ─── Duration pills ──────────────────────────────────────────────────────────
+document.querySelectorAll('#duration-pills .pill').forEach(p=>{
+  p.addEventListener('click',()=>{
+    document.querySelectorAll('#duration-pills .pill').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active');
+    if(p.dataset.min==='custom'){
+      $('custom-dur-wrap').style.display='flex';
+      S.durationMin=parseInt($('custom-dur').value);
+    } else {
+      $('custom-dur-wrap').style.display='none';
+      S.durationMin=parseInt(p.dataset.min);
+    }
+  });
+});
+$('custom-dur').addEventListener('input',e=>{
+  S.durationMin=parseInt(e.target.value);
+  $('custom-dur-val').textContent=e.target.value;
+});
+
+// ─── Route types ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.type-card').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.type-card').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    S.routeType=c.dataset.type;
+  });
+});
+
+// ─── Starting point ──────────────────────────────────────────────────────────
+function setStart(lat,lng,label){
+  S.start=[lat,lng];
+  if(startMarker) map.removeLayer(startMarker);
+  startMarker=L.marker([lat,lng],{icon:startIcon,zIndexOffset:1000}).addTo(map)
+    .bindPopup(`<b>Start:</b> ${label||lat.toFixed(5)+', '+lng.toFixed(5)}`);
+  $('start-display').style.display='block';
+  $('start-display').textContent='📍 '+(label||`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+  map.setView([lat,lng],14);
+}
+
+$('btn-geocode').addEventListener('click',geocode);
+$('addr-input').addEventListener('keydown',e=>{if(e.key==='Enter')geocode()});
+async function geocode(){
+  const q=$('addr-input').value.trim();
+  if(!q){toast('Voer eerst een adres in','error');return}
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=nl,de,be`);
+    const data=await r.json();
+    if(!data.length){toast('Locatie niet gevonden','error');return}
+    setStart(parseFloat(data[0].lat),parseFloat(data[0].lon),data[0].display_name.split(',')[0]);
+  }catch{toast('Zoeken mislukt','error')}
+}
+
+$('btn-myloc').addEventListener('click',()=>{
+  if(!navigator.geolocation){toast('Geolocatie niet ondersteund','error');return}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    setStart(pos.coords.latitude,pos.coords.longitude,'Mijn locatie');
+  },()=>toast('Kon locatie niet ophalen','error'));
+});
+
+// Pick on map
+$('btn-pick').addEventListener('click',()=>{
+  S.pickMode=true;
+  $('pick-hint').style.display='block';
+  map.getContainer().style.cursor='crosshair';
+});
+map.on('click',e=>{
+  if(!S.pickMode)return;
+  S.pickMode=false;
+  $('pick-hint').style.display='none';
+  map.getContainer().style.cursor='';
+  setStart(e.latlng.lat,e.latlng.lng);
+});
+
+// Recenter
+$('btn-center').addEventListener('click',()=>{
+  if(S.start)map.setView(S.start,14);
+  else if(activePolyline)map.fitBounds(activePolyline.getBounds(),{padding:[40,40]});
+});
+
+// ─── Route generation ─────────────────────────────────────────────────────────
+// Gemiddelde motorsnelheid (km/h) per routestijl
+const typeSpeed={scenic:55,flat:80,hilly:50,mixed:65,loop:60,oneway:70};
+
+// Nederlandse namen per routetype
+const typeLabels={scenic:'Schilderachtig',flat:'Vlak',hilly:'Heuvelachtig',mixed:'Gemengd',loop:'Lus',oneway:'Eenrichtings'};
+
+// Bounding box voor Nederland, Duitsland en België
+const BOUNDS={minLat:49.5,maxLat:55.1,minLng:2.5,maxLng:15.1};
+function clampToBounds(lat,lng){
+  return [
+    Math.max(BOUNDS.minLat,Math.min(BOUNDS.maxLat,lat)),
+    Math.max(BOUNDS.minLng,Math.min(BOUNDS.maxLng,lng))
+  ];
+}
+
+function estimateDistance(durationMin,type){
+  return (typeSpeed[type]||15) * (durationMin/60); // km
+}
+
+// Generate intermediate waypoints then always close back to start
+function makeWaypoints(lat,lng,distKm,type,filters){
+  const R=0.009; // ~1km in degrees
+  // De route rijdt langs 3 waypoints in een lus: omtrek ≈ 2π*r → r = distKm/(2π)
+  // Extra factor 1.3 voor wegomwegen op echte wegen
+  const spread=distKm/(2*Math.PI*1.3)*R;
+  const pts=[];
+
+  // 3 intermediate waypoints spread at different angles per style
+  const baseAngles={
+    scenic:[40,130,230],flat:[70,180,290],hilly:[30,120,240],
+    mixed:[60,160,280],loop:[45,165,285],oneway:[50,150,250]
+  };
+  const angles=baseAngles[type]||[60,180,300];
+
+  for(let i=0;i<angles.length;i++){
+    const jitter=(Math.random()-.5)*35;
+    const a=(angles[i]+jitter)*(Math.PI/180);
+    const d=spread*(0.5+Math.random()*0.9);
+    const busyOff=filters.busy?15:0;
+    const finalA=a+busyOff*(Math.PI/180);
+    const clamped=clampToBounds(lat+Math.sin(finalA)*d, lng+Math.cos(finalA)*d);
+    pts.push(clamped);
+  }
+
+  pts.push([lat,lng]); // always close the loop back to start
+  return pts;
+}
+
+function formatDist(m){
+  return m>=1000?`${(m/1000).toFixed(1)} km`:`${Math.round(m)} m`;
+}
+function formatDur(s){
+  const m=Math.round(s/60);
+  return m>=60?`${Math.floor(m/60)}h ${m%60}m`:`${m} min`;
+}
+
+$('btn-generate').addEventListener('click',generateRoute);
+async function generateRoute(){
+  if(!S.start){toast('Stel eerst een startpunt in','error');return}
+  const [lat,lng]=S.start;
+  const type=S.routeType;
+  const dur=S.durationMin;
+  const filters={
+    highway:$('f-highway').checked,
+    busy:$('f-busy').checked,
+    unpaved:$('f-unpaved').checked,
+    dirt:$('f-dirt').checked,
+  };
+
+  setLoading(true);
+  hideRouteInfo();
+  if(activePolyline){map.removeLayer(activePolyline);activePolyline=null}
+
+  const distKm=estimateDistance(dur,type);
+  const wps=makeWaypoints(lat,lng,distKm,type,filters);
+  const allPoints=[[lat,lng],...wps];
+
+  // Build OSRM request
+  const coords=allPoints.map(p=>p[1]+','+p[0]).join(';');
+  const url=`https://router.project-osrm.org/route/v1/car/${coords}?overview=full&geometries=geojson&steps=false`;
+
+  try{
+    const r=await fetch(url);
+    const data=await r.json();
+    if(data.code!=='Ok'||!data.routes?.length) throw new Error('No route');
+    const route=data.routes[0];
+    const lls=route.geometry.coordinates.map(c=>[c[1],c[0]]);
+    const dist=route.distance;
+    const durSec=route.duration;
+
+    activePolyline=L.polyline(lls,{
+      color:'#4f8cff',weight:5,opacity:.9,
+      dashArray:type==='oneway'?'10 6':null,
+      lineCap:'round',lineJoin:'round'
+    }).addTo(map);
+    map.fitBounds(activePolyline.getBounds(),{padding:[40,40]});
+
+    S.currentRoute={coords:lls,dist,dur:durSec,type,durationMin:dur,filters,start:S.start};
+    showRouteInfo(formatDist(dist),formatDur(durSec),typeLabels[type]||type);
+    $('route-name-input').value='';
+    toast('Route gegenereerd!');
+  }catch(e){
+    toast('Kon geen route genereren. Probeer een ander startpunt.','error');
+    console.error(e);
+  }finally{
+    setLoading(false);
+  }
+}
+
+// ─── Surprise me ─────────────────────────────────────────────────────────────
+$('btn-surprise').addEventListener('click',()=>{
+  const types=['scenic','flat','hilly','mixed','loop','oneway'];
+  const type=types[Math.floor(Math.random()*types.length)];
+  const durations=[30,45,60,90,120];
+  const dur=durations[Math.floor(Math.random()*durations.length)];
+
+  // Update UI
+  document.querySelectorAll('.type-card').forEach(c=>{
+    c.classList.toggle('active',c.dataset.type===type);
+  });
+  document.querySelectorAll('#duration-pills .pill').forEach(p=>{
+    const match=parseInt(p.dataset.min)===dur;
+    p.classList.toggle('active',match);
+  });
+  $('custom-dur-wrap').style.display='none';
+
+  S.routeType=type;S.durationMin=dur;
+
+  // Random filter combo
+  ['f-highway','f-busy','f-unpaved','f-dirt'].forEach(id=>{
+    $(id).checked=Math.random()>.4;
+  });
+
+  toast(`🎲 Willekeurig: ${typeLabels[type]} · ${dur} min`);
+  if(S.start) generateRoute();
+  else toast('Stel een startpunt in en klik daarna op Verras me!','error');
+});
+
+// ─── Save routes ──────────────────────────────────────────────────────────────
+$('btn-save').addEventListener('click',saveRoute);
+$('btn-discard').addEventListener('click',()=>{hideRouteInfo();S.currentRoute=null});
+
+function saveRoute(){
+  if(!S.currentRoute){toast('Genereer eerst een route','error');return}
+  const name=$('route-name-input').value.trim()||`Route ${new Date().toLocaleDateString('nl-NL')}`;
+  const id=Date.now().toString();
+  const route={
+    id,name,
+    coords:S.currentRoute.coords,
+    dist:S.currentRoute.dist,
+    dur:S.currentRoute.dur,
+    type:S.currentRoute.type,
+    date:new Date().toISOString(),
+    start:S.currentRoute.start,
+  };
+  S.savedRoutes.unshift(route);
+  persistRoutes();
+  renderSavedRoutes();
+  toast(`💾 Opgeslagen: "${name}"`);
+  hideRouteInfo();
+  // Switch to saved tab
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.tab[data-tab="saved"]').classList.add('active');
+  $('panel-saved').classList.add('active');
+}
+
+function persistRoutes(){
+  localStorage.setItem('bike_routes',JSON.stringify(S.savedRoutes));
+}
+
+function loadRoutes(){
+  try{
+    const d=localStorage.getItem('bike_routes');
+    if(d) S.savedRoutes=JSON.parse(d);
+  }catch{}
+}
+
+function renderSavedRoutes(){
+  const list=$('routes-list');
+  list.innerHTML='';
+  if(!S.savedRoutes.length){$('no-routes').style.display='block';return}
+  $('no-routes').style.display='none';
+
+  S.savedRoutes.forEach((r,i)=>{
+    const div=document.createElement('div');
+    div.className='route-item'+(S.loadedRouteId===r.id?' loaded':'');
+    div.innerHTML=`
+      <div class="route-item-header">
+        <span class="route-name">${escHtml(r.name)}</span>
+        <button class="btn btn-danger" data-id="${r.id}" title="Delete">✕</button>
+      </div>
+      <div class="route-meta">
+        <span class="route-badge badge-type">${r.type}</span>
+        <span class="route-badge badge-dist">${formatDist(r.dist)}</span>
+        <span class="route-badge badge-dur">${formatDur(r.dur)}</span>
+      </div>
+      <div class="route-date">${new Date(r.date).toLocaleDateString('nl-NL',{weekday:'short',year:'numeric',month:'short',day:'numeric'})}</div>`;
+
+    div.addEventListener('click',e=>{
+      if(e.target.closest('[data-id]'))return;
+      loadSavedRoute(r);
+    });
+    div.querySelector('[data-id]').addEventListener('click',e=>{
+      e.stopPropagation();
+      deleteRoute(r.id);
+    });
+    list.appendChild(div);
+  });
+
+  // Draw faint saved polylines
+  Object.values(savedPolylines).forEach(p=>map.removeLayer(p));
+  savedPolylines={};
+  S.savedRoutes.forEach(r=>{
+    const pl=L.polyline(r.coords,{color:'#a78bfa',weight:3,opacity:.4,dashArray:'6 4'}).addTo(map);
+    savedPolylines[r.id]=pl;
+  });
+}
+
+function loadSavedRoute(r){
+  if(activePolyline){map.removeLayer(activePolyline);activePolyline=null}
+  activePolyline=L.polyline(r.coords,{color:'#4f8cff',weight:5,opacity:.9,lineCap:'round',lineJoin:'round'}).addTo(map);
+  map.fitBounds(activePolyline.getBounds(),{padding:[40,40]});
+  S.loadedRouteId=r.id;
+  setStart(r.start[0],r.start[1],r.name);
+  showRouteInfo(formatDist(r.dist),formatDur(r.dur),typeLabels[r.type]||r.type);
+  $('route-name-input').value=r.name;
+  renderSavedRoutes();
+  toast(`Geladen: ${r.name}`);
+}
+
+function deleteRoute(id){
+  S.savedRoutes=S.savedRoutes.filter(r=>r.id!==id);
+  if(savedPolylines[id]){map.removeLayer(savedPolylines[id]);delete savedPolylines[id]}
+  if(S.loadedRouteId===id){S.loadedRouteId=null;hideRouteInfo()}
+  persistRoutes();
+  renderSavedRoutes();
+  toast('Route verwijderd');
+}
+
+function escHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+loadRoutes();
+renderSavedRoutes();
+setTimeout(()=>{map.invalidateSize()},100);
+</script>
+</body>
+</html>
