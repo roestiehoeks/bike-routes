@@ -904,7 +904,8 @@ function renderSavedRoutes(){
       loadSavedRoute(r);
     });
     div.querySelector('[data-action="delete"]').addEventListener('click',e=>{
-      e.stopPropagation();deleteRoute(r.id);
+      e.stopPropagation();
+      if(confirm(`"${r.name}" verwijderen? Dit kan niet ongedaan worden gemaakt.`)) deleteRoute(r.id);
     });
     div.querySelector('[data-action="rename"]').addEventListener('click',e=>{
       e.stopPropagation();
