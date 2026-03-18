@@ -458,10 +458,23 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 <script>
 // ─── Supabase ─────────────────────────────────────────────────────────────────
 const { createClient } = supabase;
+
+// Vervangt de Web Locks API met een eenvoudige JS-mutex.
+// Voorkomt de AbortError bij token-refresh én voorkomt race conditions
+// op localStorage die de sessie kunnen corrumperen.
+function makeMutex(){
+  let queue=Promise.resolve();
+  return(_name,_timeout,fn)=>{
+    const next=queue.then(()=>fn());
+    queue=next.catch(()=>{});
+    return next;
+  };
+}
+
 const sb = createClient(
   'https://notssbdzxrzgehahpvfv.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdHNzYmR6eHJ6Z2VoYWhwdmZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODY1MDEsImV4cCI6MjA4ODM2MjUwMX0.Y6Rsd3jD7KXxpod2pp73uiB1gE55kAWOGBCrx6p7VQU',
-  { auth: { lock: (_name, _timeout, fn) => fn() } }
+  { auth: { lock: makeMutex() } }
 );
 
 // ─── State ────────────────────────────────────────────────────────────────────
