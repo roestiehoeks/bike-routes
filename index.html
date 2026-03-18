@@ -775,29 +775,34 @@ async function saveRoute(){
   if(!S.user){openAuthModal();return}
 
   const name=$('route-name-input').value.trim()||`Route ${new Date().toLocaleDateString('nl-NL')}`;
+  const saveIcon=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Opslaan`;
   $('btn-save').disabled=true;
   $('btn-save').innerHTML='<span class="spinner"></span>';
 
-  const{data,error}=await sb.from('routes').insert({
-    user_id:S.user.id,
-    name,
-    coords:S.currentRoute.coords,
-    dist:S.currentRoute.dist,
-    dur:S.currentRoute.dur,
-    type:S.currentRoute.type,
-    start_point:S.currentRoute.start,
-  }).select().single();
+  try{
+    const{data,error}=await sb.from('routes').insert({
+      user_id:S.user.id,
+      name,
+      coords:S.currentRoute.coords,
+      dist:S.currentRoute.dist,
+      dur:S.currentRoute.dur,
+      type:S.currentRoute.type,
+      start_point:S.currentRoute.start,
+    }).select().single();
 
-  $('btn-save').disabled=false;
-  $('btn-save').innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Opslaan`;
+    if(error){toast('Opslaan mislukt','error');console.error(error);return}
 
-  if(error){toast('Opslaan mislukt','error');console.error(error);return}
-
-  S.savedRoutes.unshift(normalizeRoute(data));
-  renderSavedRoutes();
-  toast(`Opgeslagen: "${name}"`);
-  hideRouteInfo();
-  switchToSaved();
+    S.savedRoutes.unshift(normalizeRoute(data));
+    renderSavedRoutes();
+    toast(`Opgeslagen: "${name}"`);
+    hideRouteInfo();
+    switchToSaved();
+  }catch(err){
+    toast('Opslaan mislukt','error');console.error(err);
+  }finally{
+    $('btn-save').disabled=false;
+    $('btn-save').innerHTML=saveIcon;
+  }
 }
 
 async function loadRoutesFromDB(){
