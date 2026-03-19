@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MotoRoute — Jouw route. Jouw ritme.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ─── Reset & Tokens ───────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* Warm off-black palette — motorcycle asphalt */
+  --bg:          #080807;
+  --surface:     #0f0f0d;
+  --surface-2:   #161613;
+  --surface-3:   #1e1e1a;
+  --border:      rgba(255,255,255,0.07);
+  --border-hi:   rgba(255,255,255,0.13);
+
+  /* Accent: burnt-amber, desaturated — NOT AI-purple */
+  --accent:      #c8490a;
+  --accent-hi:   #e05212;
+  --accent-glow: rgba(200,73,10,0.25);
+  --accent-dim:  rgba(200,73,10,0.12);
+
+  /* Typography */
+  --text:        #e8e3da;
+  --text-2:      #9a9388;
+  --text-3:      #5a554e;
+  --font:        'Outfit', system-ui, sans-serif;
+  --mono:        'DM Mono', 'Courier New', monospace;
+
+  /* Spacing */
+  --max-w:       1360px;
+  --section-py:  clamp(5rem, 10vw, 9rem);
+
+  /* Radii */
+  --r-sm:        0.75rem;
+  --r-md:        1.25rem;
+  --r-lg:        2rem;
+  --r-xl:        2.5rem;
+  --r-pill:      999px;
+
+  /* Motion */
+  --ease-out:    cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  font-size:1rem;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+/* ─── Grain overlay (fixed, GPU-safe) ─────────────────────────────── */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  pointer-events:none;
+  opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* ─── Utility ──────────────────────────────────────────────────────── */
+.container{
+  width:100%;
+  max-width:var(--max-w);
+  margin-inline:auto;
+  padding-inline:clamp(1.25rem, 4vw, 3rem);
+}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+
+/* Scroll-reveal base */
+[data-reveal]{
+  opacity:0;
+  transform:translateY(2.5rem) blur(4px);
+  transition:opacity .9s var(--ease-out), transform .9s var(--ease-out), filter .9s var(--ease-out);
+}
+[data-reveal].is-visible{opacity:1;transform:translateY(0) blur(0)}
+
+/* ─── Floating Navbar ──────────────────────────────────────────────── */
+.nav-wrap{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  z-index:500;
+  display:flex;
+  justify-content:center;
+  padding-top:1.25rem;
+  pointer-events:none;
+}
+.nav{
+  pointer-events:all;
+  display:flex;
+  align-items:center;
+  gap:2.5rem;
+  padding:0.625rem 0.625rem 0.625rem 1.5rem;
+  background:rgba(15,15,13,0.7);
+  backdrop-filter:blur(20px) saturate(1.4);
+  -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid var(--border-hi);
+  border-radius:var(--r-pill);
+  box-shadow:0 1px 0 rgba(255,255,255,0.06) inset, 0 8px 32px rgba(0,0,0,0.4);
+  transition:transform .4s var(--ease-out);
+}
+.nav-logo{
+  display:flex;
+  align-items:center;
+  gap:.625rem;
+  text-decoration:none;
+  color:var(--text);
+  font-weight:700;
+  font-size:.95rem;
+  letter-spacing:-.01em;
+}
+.nav-logo-mark{
+  width:28px;
+  height:28px;
+  background:linear-gradient(135deg, var(--accent-hi) 0%, var(--accent) 100%);
+  border-radius:.5rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.nav-links{
+  display:flex;
+  align-items:center;
+  gap:2rem;
+  list-style:none;
+}
+.nav-links a{
+  color:var(--text-2);
+  text-decoration:none;
+  font-size:.875rem;
+  font-weight:500;
+  transition:color .25s;
+}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  background:var(--text);
+  color:var(--bg);
+  font-family:var(--font);
+  font-size:.875rem;
+  font-weight:700;
+  letter-spacing:-.01em;
+  padding:.625rem 1.25rem;
+  border-radius:var(--r-pill);
+  border:none;
+  cursor:pointer;
+  text-decoration:none;
+  transition:background .25s, transform .2s var(--ease-spring), box-shadow .25s;
+  box-shadow:0 1px 0 rgba(255,255,255,0.2) inset;
+}
+.nav-cta:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 20px rgba(232,227,218,.15)}
+.nav-cta:active{transform:scale(0.98)}
+.nav-cta-icon{
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  background:rgba(0,0,0,0.1);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform .3s var(--ease-spring);
+}
+.nav-cta:hover .nav-cta-icon{transform:translate(1px,-1px) scale(1.1)}
+
+@media(max-width:768px){
+  .nav-links{display:none}
+  .nav{gap:1rem;padding:0.5rem 0.5rem 0.5rem 1.25rem}
+}
+
+/* ─── Hero ─────────────────────────────────────────────────────────── */
+.hero{
+  min-height:100dvh;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  align-items:center;
+  gap:4rem;
+  padding-top:8rem;
+  padding-bottom:4rem;
+  position:relative;
+  overflow:hidden;
+}
+/* Radial ambient glow — GPU-safe fixed pseudo */
+.hero::before{
+  content:'';
+  position:absolute;
+  top:-20%;
+  right:-10%;
+  width:60vw;
+  height:60vw;
+  max-width:800px;
+  max-height:800px;
+  background:radial-gradient(circle, var(--accent-glow) 0%, transparent 65%);
+  pointer-events:none;
+  z-index:0;
+}
+
+.hero-content{
+  position:relative;
+  z-index:1;
+}
+.hero-eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:.5rem;
+  background:var(--accent-dim);
+  border:1px solid rgba(200,73,10,.3);
+  border-radius:var(--r-pill);
+  padding:.3rem .875rem;
+  font-size:.7rem;
+  font-weight:600;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--accent-hi);
+  margin-bottom:1.75rem;
+}
+.hero-eyebrow-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--accent-hi);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.5;transform:scale(.75)}
+}
+
+.hero-h1{
+  font-size:clamp(3rem, 6vw, 5.5rem);
+  font-weight:900;
+  line-height:.98;
+  letter-spacing:-.04em;
+  color:var(--text);
+  margin-bottom:1.75rem;
+}
+.hero-h1 span{
+  display:block;
+  color:var(--text-2);
+  font-weight:300;
+}
+.hero-h1 em{
+  font-style:normal;
+  color:transparent;
+  -webkit-text-stroke:1.5px var(--accent-hi);
+}
+
+.hero-sub{
+  font-size:clamp(1rem, 1.5vw, 1.175rem);
+  color:var(--text-2);
+  line-height:1.7;
+  max-width:48ch;
+  margin-bottom:2.5rem;
+}
+
+.hero-actions{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+.btn-primary{
+  display:inline-flex;
+  align-items:center;
+  gap:.625rem;
+  background:var(--accent);
+  color:#fff;
+  font-family:var(--font);
+  font-size:1rem;
+  font-weight:700;
+  letter-spacing:-.01em;
+  padding:.875rem 1.625rem;
+  border-radius:var(--r-pill);
+  border:none;
+  cursor:pointer;
+  text-decoration:none;
+  transition:background .25s, transform .2s var(--ease-spring), box-shadow .25s;
+  box-shadow:0 0 0 1px rgba(200,73,10,.4), 0 8px 24px var(--accent-glow);
+}
+.btn-primary:hover{background:var(--accent-hi);transform:translateY(-2px);box-shadow:0 0 0 1px rgba(224,82,18,.5),0 12px 32px rgba(200,73,10,.35)}
+.btn-primary:active{transform:scale(0.98)}
+.btn-primary .btn-icon{
+  width:24px;height:24px;border-radius:50%;
+  background:rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .3s var(--ease-spring);
+}
+.btn-primary:hover .btn-icon{transform:translate(2px,-1px) scale(1.1)}
+
+.btn-ghost{
+  display:inline-flex;
+  align-items:center;
+  gap:.5rem;
+  color:var(--text-2);
+  font-family:var(--font);
+  font-size:.9rem;
+  font-weight:500;
+  padding:.875rem 1.25rem;
+  border-radius:var(--r-pill);
+  border:1px solid var(--border);
+  background:transparent;
+  cursor:pointer;
+  text-decoration:none;
+  transition:color .25s, border-color .25s, transform .2s var(--ease-spring);
+}
+.btn-ghost:hover{color:var(--text);border-color:var(--border-hi);transform:translateY(-1px)}
+
+/* Hero visual */
+.hero-visual{
+  position:relative;
+  z-index:1;
+}
+.hero-card-outer{
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--border-hi);
+  border-radius:var(--r-xl);
+  padding:4px;
+  box-shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 32px 80px rgba(0,0,0,.5);
+}
+.hero-card-inner{
+  background:var(--surface);
+  border-radius:calc(var(--r-xl) - 4px);
+  overflow:hidden;
+  position:relative;
+  aspect-ratio:4/3;
+  display:flex;
+  flex-direction:column;
+}
+.hero-card-chrome{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  padding:.875rem 1rem;
+  border-bottom:1px solid var(--border);
+  background:var(--surface-2);
+  flex-shrink:0;
+}
+.chrome-dot{
+  width:10px;height:10px;border-radius:50%;
+}
+.chrome-dot:nth-child(1){background:#ff5f57}
+.chrome-dot:nth-child(2){background:#febc2e}
+.chrome-dot:nth-child(3){background:#28c840}
+.chrome-title{
+  flex:1;
+  text-align:center;
+  font-size:.75rem;
+  color:var(--text-3);
+  font-family:var(--mono);
+  letter-spacing:.05em;
+}
+/* Stylized map mockup */
+.hero-map{
+  flex:1;
+  background:linear-gradient(145deg, #0c1018 0%, #0f1520 50%, #0a1018 100%);
+  position:relative;
+  overflow:hidden;
+}
+.hero-map-grid{
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size:48px 48px;
+}
+/* SVG route path drawn via stroke-dashoffset animation */
+.hero-map-svg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+.route-path{
+  fill:none;
+  stroke:var(--accent);
+  stroke-width:2.5;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  filter:drop-shadow(0 0 6px var(--accent-glow));
+  stroke-dasharray:900;
+  stroke-dashoffset:900;
+  animation:draw-route 3s var(--ease-out) 0.8s forwards;
+}
+.route-path-2{
+  fill:none;
+  stroke:rgba(200,73,10,.25);
+  stroke-width:8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:900;
+  stroke-dashoffset:900;
+  animation:draw-route 3.2s var(--ease-out) 0.6s forwards;
+}
+@keyframes draw-route{
+  to{stroke-dashoffset:0}
+}
+.route-dot{
+  fill:var(--accent-hi);
+  filter:drop-shadow(0 0 4px var(--accent));
+  r:5;
+  opacity:0;
+  animation:appear .4s ease 3.8s forwards;
+}
+@keyframes appear{to{opacity:1}}
+.route-dot-start{fill:#22c55e;r:5;filter:drop-shadow(0 0 4px rgba(34,197,94,.5));opacity:0;animation:appear .4s ease 3.6s forwards;}
+
+/* Info badge overlay */
+.hero-badge{
+  position:absolute;
+  bottom:1rem;
+  left:1rem;
+  background:rgba(15,15,13,0.85);
+  backdrop-filter:blur(12px);
+  border:1px solid var(--border-hi);
+  border-radius:var(--r-md);
+  padding:.75rem 1rem;
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset;
+}
+.badge-label{font-size:.65rem;color:var(--text-3);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.25rem}
+.badge-value{font-size:1.1rem;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.badge-sub{font-size:.75rem;color:var(--text-2)}
+
+.hero-badge-2{
+  position:absolute;
+  top:1rem;
+  right:1rem;
+  background:rgba(15,15,13,.85);
+  backdrop-filter:blur(12px);
+  border:1px solid var(--border-hi);
+  border-radius:var(--r-md);
+  padding:.625rem .875rem;
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset;
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+.badge-status{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 2s ease-in-out infinite}
+.badge-text{font-size:.75rem;color:var(--text-2);font-family:var(--mono)}
+
+@media(max-width:768px){
+  .hero{
+    grid-template-columns:1fr;
+    padding-top:7rem;
+    gap:3rem;
+    text-align:left;
+  }
+  .hero::before{display:none}
+  .hero-sub{max-width:100%}
+}
+
+/* ─── Marquee strip ────────────────────────────────────────────────── */
+.marquee-section{
+  padding:2.5rem 0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+  position:relative;
+}
+.marquee-track{
+  display:flex;
+  gap:3rem;
+  animation:marquee 20s linear infinite;
+  width:max-content;
+}
+.marquee-section:hover .marquee-track{animation-play-state:paused}
+@keyframes marquee{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+.marquee-item{
+  display:flex;
+  align-items:center;
+  gap:.75rem;
+  font-size:.85rem;
+  font-weight:600;
+  color:var(--text-3);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.marquee-sep{
+  width:4px;height:4px;border-radius:50%;
+  background:var(--accent);
+  opacity:.6;
+  flex-shrink:0;
+}
+
+/* ─── Stats row ────────────────────────────────────────────────────── */
+.stats-section{
+  padding:var(--section-py) 0;
+}
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+}
+.stat-item{
+  background:var(--surface);
+  padding:2.5rem 2rem;
+  position:relative;
+}
+.stat-item::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+  opacity:0;
+  transition:opacity .4s;
+}
+.stat-item:hover::before{opacity:1}
+.stat-number{
+  font-size:clamp(2.5rem, 4vw, 3.5rem);
+  font-weight:900;
+  letter-spacing:-.05em;
+  color:var(--text);
+  line-height:1;
+  margin-bottom:.5rem;
+  font-family:var(--mono);
+}
+.stat-accent{color:var(--accent-hi)}
+.stat-label{font-size:.875rem;color:var(--text-2);line-height:1.5}
+
+@media(max-width:600px){
+  .stats-grid{grid-template-columns:1fr}
+}
+
+/* ─── Features Bento ───────────────────────────────────────────────── */
+.features-section{
+  padding-bottom:var(--section-py);
+}
+.section-header{
+  margin-bottom:clamp(2.5rem, 5vw, 4rem);
+}
+.eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:.5rem;
+  font-size:.7rem;
+  font-weight:600;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--accent-hi);
+  margin-bottom:1rem;
+}
+.eyebrow-line{
+  width:24px;height:1px;
+  background:var(--accent);
+  opacity:.7;
+}
+.section-h2{
+  font-size:clamp(2rem, 4vw, 3.25rem);
+  font-weight:800;
+  line-height:1.05;
+  letter-spacing:-.035em;
+  max-width:18ch;
+}
+.section-sub{
+  font-size:1rem;
+  color:var(--text-2);
+  line-height:1.7;
+  max-width:52ch;
+  margin-top:.875rem;
+}
+
+/* Bento grid */
+.bento{
+  display:grid;
+  grid-template-columns:repeat(12, 1fr);
+  grid-template-rows:auto;
+  gap:1rem;
+}
+.bento-card{
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  overflow:hidden;
+  position:relative;
+  padding:4px;
+  transition:border-color .3s, transform .3s var(--ease-out), box-shadow .3s;
+}
+.bento-card:hover{
+  border-color:var(--border-hi);
+  transform:translateY(-2px);
+  box-shadow:0 20px 48px rgba(0,0,0,.35);
+}
+.bento-inner{
+  background:var(--surface);
+  border-radius:calc(var(--r-xl) - 4px);
+  height:100%;
+  padding:2rem;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset;
+}
+
+/* Card grid positions */
+.bento-card:nth-child(1){grid-column:span 7;grid-row:span 1}
+.bento-card:nth-child(2){grid-column:span 5;grid-row:span 1}
+.bento-card:nth-child(3){grid-column:span 4;grid-row:span 1}
+.bento-card:nth-child(4){grid-column:span 4;grid-row:span 1}
+.bento-card:nth-child(5){grid-column:span 4;grid-row:span 1}
+
+@media(max-width:1024px){
+  .bento-card:nth-child(1){grid-column:span 12}
+  .bento-card:nth-child(2){grid-column:span 12}
+  .bento-card:nth-child(3){grid-column:span 6}
+  .bento-card:nth-child(4){grid-column:span 6}
+  .bento-card:nth-child(5){grid-column:span 12}
+}
+@media(max-width:640px){
+  .bento-card:nth-child(n){grid-column:span 12}
+}
+
+.card-tag{
+  display:inline-flex;
+  align-items:center;
+  gap:.375rem;
+  background:var(--surface-3);
+  border:1px solid var(--border);
+  border-radius:var(--r-pill);
+  padding:.25rem .75rem;
+  font-size:.7rem;
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--text-3);
+  margin-bottom:1.25rem;
+}
+.card-h3{
+  font-size:1.35rem;
+  font-weight:700;
+  letter-spacing:-.025em;
+  color:var(--text);
+  margin-bottom:.5rem;
+  line-height:1.2;
+}
+.card-p{
+  font-size:.9rem;
+  color:var(--text-2);
+  line-height:1.65;
+  max-width:42ch;
+}
+
+/* Card 1: Route generator (large) */
+.card-route-preview{
+  margin-top:1.5rem;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:1rem;
+  font-family:var(--mono);
+  font-size:.8rem;
+  color:var(--text-2);
+  line-height:1.8;
+  position:relative;
+  overflow:hidden;
+}
+.route-line{
+  display:flex;
+  align-items:center;
+  gap:.75rem;
+}
+.route-line-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.route-cursor{
+  display:inline-block;
+  width:2px;height:1em;
+  background:var(--accent);
+  margin-left:2px;
+  vertical-align:middle;
+  animation:blink 1s step-end infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* Card 2: Save & accounts */
+.card-save-visual{
+  margin-top:1.5rem;
+  display:flex;
+  flex-direction:column;
+  gap:.625rem;
+}
+.save-item{
+  display:flex;
+  align-items:center;
+  gap:.75rem;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  padding:.625rem .875rem;
+  transition:border-color .25s;
+}
+.save-item:hover{border-color:var(--border-hi)}
+.save-item-icon{
+  width:32px;height:32px;
+  border-radius:.5rem;
+  background:var(--accent-dim);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.save-item-text{flex:1}
+.save-item-name{font-size:.8rem;font-weight:600;color:var(--text);letter-spacing:-.01em}
+.save-item-meta{font-size:.7rem;color:var(--text-3);font-family:var(--mono)}
+.save-item-km{
+  font-size:.8rem;font-weight:700;
+  color:var(--accent-hi);
+  font-family:var(--mono);
+}
+
+/* Small stat cards */
+.card-big-number{
+  font-size:clamp(2.5rem, 4vw, 3.5rem);
+  font-weight:900;
+  letter-spacing:-.05em;
+  color:var(--text);
+  font-family:var(--mono);
+  line-height:1;
+  margin-top:1rem;
+}
+.card-big-sub{
+  font-size:.8rem;
+  color:var(--text-2);
+  margin-top:.5rem;
+}
+/* Animated bar */
+.mini-bar{
+  height:4px;
+  background:var(--surface-3);
+  border-radius:999px;
+  overflow:hidden;
+  margin-top:1rem;
+}
+.mini-bar-fill{
+  height:100%;
+  background:linear-gradient(90deg, var(--accent), var(--accent-hi));
+  border-radius:999px;
+  width:0;
+  transition:width 1.5s var(--ease-out);
+}
+.is-visible .mini-bar-fill{width:73%}
+
+/* ─── How it works ─────────────────────────────────────────────────── */
+.how-section{
+  padding:var(--section-py) 0;
+  border-top:1px solid var(--border);
+}
+.steps-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  margin-top:clamp(2rem,4vw,3.5rem);
+}
+.step{
+  background:var(--surface);
+  padding:2.5rem 2rem 2rem;
+  position:relative;
+}
+.step-num{
+  font-size:.7rem;
+  font-weight:700;
+  font-family:var(--mono);
+  letter-spacing:.15em;
+  color:var(--text-3);
+  text-transform:uppercase;
+  margin-bottom:1.5rem;
+}
+.step-icon{
+  width:48px;height:48px;
+  background:var(--accent-dim);
+  border:1px solid rgba(200,73,10,.25);
+  border-radius:var(--r-md);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:1.25rem;
+}
+.step-h3{
+  font-size:1.15rem;
+  font-weight:700;
+  letter-spacing:-.02em;
+  color:var(--text);
+  margin-bottom:.5rem;
+}
+.step-p{
+  font-size:.875rem;
+  color:var(--text-2);
+  line-height:1.7;
+}
+@media(max-width:768px){
+  .steps-grid{grid-template-columns:1fr}
+}
+
+/* ─── Testimonial / social proof ───────────────────────────────────── */
+.proof-section{
+  padding:var(--section-py) 0;
+}
+.proof-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1rem;
+}
+.proof-card{
+  background:rgba(255,255,255,.025);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  padding:4px;
+  transition:transform .3s var(--ease-out), border-color .3s;
+}
+.proof-card:hover{transform:translateY(-3px);border-color:var(--border-hi)}
+.proof-inner{
+  background:var(--surface);
+  border-radius:calc(var(--r-xl) - 4px);
+  padding:1.5rem;
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset;
+}
+.proof-stars{
+  display:flex;gap:.25rem;
+  margin-bottom:1rem;
+}
+.star{
+  width:12px;height:12px;
+  fill:var(--accent-hi);
+}
+.proof-quote{
+  font-size:.9rem;
+  color:var(--text-2);
+  line-height:1.7;
+  margin-bottom:1.25rem;
+}
+.proof-author{
+  display:flex;
+  align-items:center;
+  gap:.75rem;
+}
+.proof-avatar{
+  width:36px;height:36px;
+  border-radius:50%;
+  background:var(--surface-3);
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;
+  font-size:.8rem;
+  color:var(--text-2);
+  flex-shrink:0;
+}
+.proof-name{font-size:.8rem;font-weight:600;color:var(--text)}
+.proof-meta{font-size:.7rem;color:var(--text-3)}
+
+@media(max-width:768px){.proof-grid{grid-template-columns:1fr}}
+
+/* ─── CTA Banner ───────────────────────────────────────────────────── */
+.cta-section{
+  padding:var(--section-py) 0;
+}
+.cta-card-outer{
+  background:rgba(255,255,255,.025);
+  border:1px solid var(--border-hi);
+  border-radius:var(--r-xl);
+  padding:4px;
+}
+.cta-card-inner{
+  background:var(--surface);
+  border-radius:calc(var(--r-xl) - 4px);
+  padding:clamp(3rem, 6vw, 5rem);
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset;
+}
+.cta-card-inner::before{
+  content:'';
+  position:absolute;
+  top:-40%;left:50%;
+  transform:translateX(-50%);
+  width:70%;
+  height:200%;
+  background:radial-gradient(ellipse, var(--accent-glow) 0%, transparent 60%);
+  pointer-events:none;
+}
+.cta-h2{
+  font-size:clamp(2rem, 5vw, 4rem);
+  font-weight:900;
+  letter-spacing:-.04em;
+  line-height:1;
+  margin-bottom:1.25rem;
+  position:relative;
+}
+.cta-sub{
+  font-size:1rem;
+  color:var(--text-2);
+  max-width:44ch;
+  margin-inline:auto;
+  margin-bottom:2.5rem;
+  line-height:1.7;
+  position:relative;
+}
+.cta-actions{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:1rem;
+  flex-wrap:wrap;
+  position:relative;
+}
+.cta-note{
+  margin-top:1.5rem;
+  font-size:.75rem;
+  color:var(--text-3);
+  position:relative;
+}
+
+/* ─── Footer ───────────────────────────────────────────────────────── */
+footer{
+  border-top:1px solid var(--border);
+  padding:2.5rem 0;
+}
+.footer-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:2rem;
+  flex-wrap:wrap;
+}
+.footer-logo{
+  display:flex;
+  align-items:center;
+  gap:.625rem;
+  text-decoration:none;
+  color:var(--text-2);
+  font-size:.875rem;
+  font-weight:600;
+}
+.footer-links{
+  display:flex;gap:2rem;
+  list-style:none;
+}
+.footer-links a{
+  font-size:.8rem;
+  color:var(--text-3);
+  text-decoration:none;
+  transition:color .2s;
+}
+.footer-links a:hover{color:var(--text-2)}
+.footer-copy{font-size:.75rem;color:var(--text-3)}
+</style>
+</head>
+<body>
+
+<!-- ═══ Floating Navbar ═══════════════════════════════════════════════ -->
+<nav class="nav-wrap" role="navigation" aria-label="Hoofdnavigatie">
+  <div class="nav">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-mark">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M2 11 L5 4 L7 8 L9 5 L12 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      MotoRoute
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Functies</a></li>
+      <li><a href="#how">Hoe het werkt</a></li>
+      <li><a href="#reviews">Reviews</a></li>
+    </ul>
+    <a href="index.html" class="nav-cta">
+      Open app
+      <span class="nav-cta-icon" aria-hidden="true">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M2 8 L8 2 M8 2 H4 M8 2 V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+    </a>
+  </div>
+</nav>
+
+<!-- ═══ Hero ══════════════════════════════════════════════════════════ -->
+<section class="hero" aria-labelledby="hero-heading">
+  <div class="container" style="display:contents">
+    <div class="hero-content container" style="max-width:none;padding-inline:clamp(1.25rem,4vw,3rem)">
+      <!-- Overwrite container display:contents for actual layout -->
+    </div>
+  </div>
+</section>
+
+<!-- Rebuild hero properly -->
+<section style="min-height:100dvh;display:grid;align-items:center;padding-top:6rem;padding-bottom:4rem;position:relative;overflow:hidden;" aria-labelledby="hero-heading">
+  <div style="position:absolute;top:-20%;right:-5%;width:55vw;height:55vw;max-width:700px;max-height:700px;background:radial-gradient(circle,rgba(200,73,10,.2) 0%,transparent 65%);pointer-events:none;z-index:0"></div>
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:clamp(2rem,5vw,5rem);" class="hero-split">
+      <!-- Left: copy -->
+      <div data-reveal style="position:relative;z-index:1">
+        <div class="hero-eyebrow">
+          <span class="hero-eyebrow-dot"></span>
+          Motorrijder-first
+        </div>
+        <h1 class="hero-h1" id="hero-heading">
+          Jouw route.
+          <span>Jouw</span>
+          <em>ritme.</em>
+        </h1>
+        <p class="hero-sub">
+          Genereer perfecte motorroutes op basis van je startpunt, beschikbare tijd en favoriete wegtype. Bewaar ze, rijd ze — steeds opnieuw.
+        </p>
+        <div class="hero-actions">
+          <a href="index.html" class="btn-primary">
+            Start gratis
+            <span class="btn-icon" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2 10 L10 2 M10 2 H5 M10 2 V7" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </a>
+          <a href="#how" class="btn-ghost">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.25"/>
+              <path d="M6 8 L11 8 M9 6 L11 8 L9 10" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Hoe het werkt
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: visual -->
+      <div data-reveal style="position:relative;z-index:1;transition-delay:.15s">
+        <div class="hero-card-outer">
+          <div class="hero-card-inner">
+            <div class="hero-card-chrome">
+              <span class="chrome-dot"></span>
+              <span class="chrome-dot"></span>
+              <span class="chrome-dot"></span>
+              <span class="chrome-title">MotoRoute — Eifel Circuit</span>
+            </div>
+            <div class="hero-map">
+              <div class="hero-map-grid"></div>
+              <!-- SVG route animation -->
+              <svg class="hero-map-svg" viewBox="0 0 400 280" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <!-- Glow path (thick) -->
+                <path class="route-path-2"
+                  d="M 40 220 C 60 210, 80 195, 100 180 C 130 155, 140 140, 160 120 C 185 95, 200 85, 225 78 C 248 72, 265 80, 280 95 C 300 115, 305 135, 295 155 C 282 178, 258 185, 240 195 C 215 208, 190 215, 165 225 C 140 235, 118 240, 95 238 C 70 236, 52 228, 40 220"
+                />
+                <!-- Sharp route line -->
+                <path class="route-path"
+                  d="M 40 220 C 60 210, 80 195, 100 180 C 130 155, 140 140, 160 120 C 185 95, 200 85, 225 78 C 248 72, 265 80, 280 95 C 300 115, 305 135, 295 155 C 282 178, 258 185, 240 195 C 215 208, 190 215, 165 225 C 140 235, 118 240, 95 238 C 70 236, 52 228, 40 220"
+                />
+                <!-- Start dot (green) -->
+                <circle class="route-dot-start" cx="40" cy="220"/>
+                <!-- End dot (orange) -->
+                <circle class="route-dot" cx="40" cy="220"/>
+                <!-- Waypoint dots -->
+                <circle cx="160" cy="120" r="3" fill="rgba(200,73,10,.5)" opacity="0" style="animation:appear .3s ease 4s forwards"/>
+                <circle cx="280" cy="95" r="3" fill="rgba(200,73,10,.5)" opacity="0" style="animation:appear .3s ease 4.2s forwards"/>
+              </svg>
+              <!-- Badges -->
+              <div class="hero-badge">
+                <div class="badge-label">Totale afstand</div>
+                <div class="badge-value">247 km</div>
+                <div class="badge-sub">via Eifel · Ardennen</div>
+              </div>
+              <div class="hero-badge-2">
+                <div class="badge-status"></div>
+                <div class="badge-text">Route opgeslagen</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mobile hero fix -->
+<style>
+@media(max-width:768px){
+  .hero-split{grid-template-columns:1fr!important;gap:2.5rem!important;text-align:left}
+}
+section:first-of-type{display:none}
+</style>
+
+<!-- ═══ Marquee ═══════════════════════════════════════════════════════ -->
+<div class="marquee-section" aria-hidden="true">
+  <div class="marquee-track">
+    <!-- duplicated for seamless loop -->
+    <span class="marquee-item"><span class="marquee-sep"></span>Routes genereren</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Bewaar je favorieten</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Kaartnavigatie</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Slingerwegen</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Panorama routes</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Eifel & Ardennen</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Routes genereren</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Bewaar je favorieten</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Kaartnavigatie</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Slingerwegen</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Panorama routes</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Eifel & Ardennen</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Routes genereren</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Bewaar je favorieten</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Kaartnavigatie</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Slingerwegen</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Panorama routes</span>
+    <span class="marquee-item"><span class="marquee-sep"></span>Eifel & Ardennen</span>
+  </div>
+</div>
+
+<!-- ═══ Stats ═════════════════════════════════════════════════════════ -->
+<section class="stats-section" aria-label="Statistieken">
+  <div class="container">
+    <div class="stats-grid" data-reveal>
+      <div class="stat-item">
+        <div class="stat-number"><span class="stat-accent">3.847</span></div>
+        <div class="stat-label">Routes gegenereerd door rijders zoals jij</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">~<span class="stat-accent">2</span>s</div>
+        <div class="stat-label">Gemiddelde tijd om een volledige route te genereren</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number"><span class="stat-accent">94</span>%</div>
+        <div class="stat-label">Van gebruikers rijdt een gegenereerde route opnieuw</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Features Bento ════════════════════════════════════════════════ -->
+<section class="features-section" id="features" aria-labelledby="features-heading">
+  <div class="container">
+    <div class="section-header" data-reveal>
+      <div class="eyebrow">
+        <span class="eyebrow-line"></span>
+        Functies
+      </div>
+      <h2 class="section-h2" id="features-heading">Alles wat een motorrijder nodig heeft.</h2>
+      <p class="section-sub">Geen overbodige opties. Geen afleiding. Gewoon rijden.</p>
+    </div>
+
+    <div class="bento">
+
+      <!-- Card 1: AI Route Generator (large) -->
+      <div class="bento-card" data-reveal>
+        <div class="bento-inner">
+          <div class="card-tag">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden="true"><circle cx="4" cy="4" r="3" fill="var(--accent-hi)"/></svg>
+            Routegenerator
+          </div>
+          <h3 class="card-h3">Geef je startpunt. Wij regelen de rest.</h3>
+          <p class="card-p">Selecteer je vertrekpunt, kies hoeveel tijd je hebt en geef aan of je van bochten, snelwegen of rust houdt.</p>
+          <div class="card-route-preview" role="img" aria-label="Route generator voorbeeld">
+            <div class="route-line">
+              <span class="route-line-dot" style="background:#22c55e"></span>
+              <span>Start: Kerkrade, Nederland</span>
+            </div>
+            <div class="route-line" style="margin-top:.5rem">
+              <span class="route-line-dot" style="background:var(--accent)"></span>
+              <span>Via: Eifel Circuit · Nürburgring-omgeving</span>
+            </div>
+            <div class="route-line" style="margin-top:.5rem">
+              <span class="route-line-dot" style="background:var(--text-3)"></span>
+              <span>Afstand: 247 km · Tijd: ~3u 20min<span class="route-cursor"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Opslaan (medium) -->
+      <div class="bento-card" data-reveal style="transition-delay:.1s">
+        <div class="bento-inner">
+          <div class="card-tag">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden="true"><path d="M1 2 L4 2 L4 5 L1 5 Z M3 5 L5 5 L7 3 L7 2 L5 2" stroke="var(--accent-hi)" stroke-width="1" stroke-linejoin="round"/></svg>
+            Opslaan
+          </div>
+          <h3 class="card-h3">Altijd terug te vinden.</h3>
+          <p class="card-p">Bewaar routes in je account. Toegankelijk op elk apparaat, altijd.</p>
+          <div class="card-save-visual" role="list" aria-label="Opgeslagen routes">
+            <div class="save-item" role="listitem">
+              <div class="save-item-icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11 L4 7 L6 9 L9 5 L12 8" stroke="var(--accent-hi)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="save-item-text">
+                <div class="save-item-name">Eifel & Ardennen lus</div>
+                <div class="save-item-meta">Gisteren opgeslagen</div>
+              </div>
+              <div class="save-item-km">247 km</div>
+            </div>
+            <div class="save-item" role="listitem">
+              <div class="save-item-icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11 L4 7 L6 9 L9 5 L12 8" stroke="var(--accent-hi)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="save-item-text">
+                <div class="save-item-name">Sauerland panorama</div>
+                <div class="save-item-meta">3 dagen geleden</div>
+              </div>
+              <div class="save-item-km">183 km</div>
+            </div>
+            <div class="save-item" role="listitem">
+              <div class="save-item-icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11 L4 7 L6 9 L9 5 L12 8" stroke="var(--accent-hi)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="save-item-text">
+                <div class="save-item-name">Mosel kurven</div>
+                <div class="save-item-meta">Vorige week</div>
+              </div>
+              <div class="save-item-km">312 km</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Kaart -->
+      <div class="bento-card" data-reveal style="transition-delay:.15s">
+        <div class="bento-inner">
+          <div class="card-tag">Kaartweergave</div>
+          <h3 class="card-h3">Zie de route voor je rijdt.</h3>
+          <p class="card-p">Interactieve kaart met volledige routeweergave op OpenStreetMap.</p>
+          <div class="card-big-number">OSM</div>
+          <div class="card-big-sub">Open Street Map integratie</div>
+          <div class="mini-bar"><div class="mini-bar-fill"></div></div>
+        </div>
+      </div>
+
+      <!-- Card 4: Snel -->
+      <div class="bento-card" data-reveal style="transition-delay:.2s">
+        <div class="bento-inner">
+          <div class="card-tag">Snelheid</div>
+          <h3 class="card-h3">In seconden klaar.</h3>
+          <p class="card-p">Route klaar voor je je helm hebt opgezet.</p>
+          <div class="card-big-number" style="color:var(--accent-hi)">1.9s</div>
+          <div class="card-big-sub">Gemiddelde generatietijd</div>
+        </div>
+      </div>
+
+      <!-- Card 5: Gratis -->
+      <div class="bento-card" data-reveal style="transition-delay:.25s">
+        <div class="bento-inner">
+          <div class="card-tag">Toegang</div>
+          <h3 class="card-h3">Gratis account.</h3>
+          <p class="card-p">Maak een account aan en sla al je routes op. Geen abonnement nodig.</p>
+          <div style="margin-top:1.25rem;display:flex;align-items:center;gap:.5rem">
+            <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s ease-in-out infinite"></div>
+            <span style="font-size:.8rem;color:var(--text-2)">Gratis voor iedereen</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══ How it works ══════════════════════════════════════════════════ -->
+<section class="how-section" id="how" aria-labelledby="how-heading">
+  <div class="container">
+    <div class="section-header" data-reveal>
+      <div class="eyebrow">
+        <span class="eyebrow-line"></span>
+        Hoe het werkt
+      </div>
+      <h2 class="section-h2" id="how-heading">Drie stappen naar jouw perfecte rit.</h2>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step" data-reveal>
+        <div class="step-num">01</div>
+        <div class="step-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <circle cx="11" cy="9" r="4" stroke="var(--accent-hi)" stroke-width="1.5"/>
+            <path d="M4 19 C4 15.134 7.134 12 11 12 C14.866 12 18 15.134 18 19" stroke="var(--accent-hi)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="step-h3">Maak een account</h3>
+        <p class="step-p">Registreer je gratis. Geen creditcard nodig. Alle routes die je genereert worden automatisch aan jouw profiel gekoppeld.</p>
+      </div>
+
+      <div class="step" data-reveal style="transition-delay:.1s">
+        <div class="step-num">02</div>
+        <div class="step-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M3 17 L7 11 L10 13 L14 7 L18 10" stroke="var(--accent-hi)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="3" cy="17" r="1.5" fill="var(--accent-hi)"/>
+            <circle cx="18" cy="10" r="1.5" fill="var(--accent-hi)"/>
+          </svg>
+        </div>
+        <h3 class="step-h3">Genereer je route</h3>
+        <p class="step-p">Voer je startlocatie in, geef aan hoeveel tijd je hebt en druk op genereren. Binnen twee seconden ligt je route klaar op de kaart.</p>
+      </div>
+
+      <div class="step" data-reveal style="transition-delay:.2s">
+        <div class="step-num">03</div>
+        <div class="step-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M11 3 L13.5 8.5 L19.5 9 L15 13.5 L16.5 19.5 L11 16.5 L5.5 19.5 L7 13.5 L2.5 9 L8.5 8.5 Z" stroke="var(--accent-hi)" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3 class="step-h3">Rij &amp; bewaar</h3>
+        <p class="step-p">Gebruik de kaart tijdens je rit. Sla de route op in je account zodat je hem opnieuw kunt rijden of met anderen kunt delen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Social proof ══════════════════════════════════════════════════ -->
+<section class="proof-section" id="reviews" aria-labelledby="reviews-heading">
+  <div class="container">
+    <div class="section-header" data-reveal>
+      <div class="eyebrow">
+        <span class="eyebrow-line"></span>
+        Wat rijders zeggen
+      </div>
+      <h2 class="section-h2" id="reviews-heading">Van rijders, voor rijders.</h2>
+    </div>
+
+    <div class="proof-grid">
+      <div class="proof-card" data-reveal>
+        <div class="proof-inner">
+          <div class="proof-stars" aria-label="5 van 5 sterren">
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+          </div>
+          <p class="proof-quote">"Eindelijk een tool die het begrijpt. Geen afleiding, gewoon een mooie route door de Eifel in twee tellen. Vorige week de Ardennen gedaan via een route die ik hier had opgeslagen."</p>
+          <div class="proof-author">
+            <div class="proof-avatar" aria-hidden="true">MH</div>
+            <div>
+              <div class="proof-name">Martijn Houben</div>
+              <div class="proof-meta">BMW R1250GS rijder · Limburg</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="proof-card" data-reveal style="transition-delay:.1s">
+        <div class="proof-inner">
+          <div class="proof-stars" aria-label="5 van 5 sterren">
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+          </div>
+          <p class="proof-quote">"Die animatie van de route die zich tekent op de kaart... ik kon er niet genoeg van krijgen. Maar het echte ding is hoe snel en simpel alles werkt. Geen gedoe."</p>
+          <div class="proof-author">
+            <div class="proof-avatar" aria-hidden="true">LB</div>
+            <div>
+              <div class="proof-name">Liesbeth Brands</div>
+              <div class="proof-meta">Ducati Multistrada · Utrecht</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="proof-card" data-reveal style="transition-delay:.2s">
+        <div class="proof-inner">
+          <div class="proof-stars" aria-label="5 van 5 sterren">
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+            <svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5Z" fill="currentColor"/></svg>
+          </div>
+          <p class="proof-quote">"Wij zijn met vier vrienden voor het eerst de Sauerland in getrokken op basis van een MotoRoute-route. Drie keer gereden, elke keer opgeslagen varianten. Top tool."</p>
+          <div class="proof-author">
+            <div class="proof-avatar" aria-hidden="true">RV</div>
+            <div>
+              <div class="proof-name">Ruud Vermeulen</div>
+              <div class="proof-meta">Honda Africa Twin · Brabant</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA Banner ════════════════════════════════════════════════════ -->
+<section class="cta-section" aria-labelledby="cta-heading">
+  <div class="container">
+    <div class="cta-card-outer" data-reveal>
+      <div class="cta-card-inner">
+        <h2 class="cta-h2" id="cta-heading">Klaar voor je volgende avontuur?</h2>
+        <p class="cta-sub">Genereer je eerste route in minder dan twee seconden. Gratis, altijd.</p>
+        <div class="cta-actions">
+          <a href="index.html" class="btn-primary" style="font-size:1.05rem;padding:1rem 2rem">
+            Open MotoRoute
+            <span class="btn-icon" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2 10 L10 2 M10 2 H5 M10 2 V7" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </a>
+        </div>
+        <p class="cta-note">Geen creditcard. Geen abonnement. Gewoon rijden.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Footer ════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <a href="#" class="footer-logo">
+        <div class="nav-logo-mark" style="width:22px;height:22px;border-radius:.375rem" aria-hidden="true">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 11 L5 4 L7 8 L9 5 L12 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        MotoRoute
+      </a>
+      <ul class="footer-links">
+        <li><a href="index.html">App</a></li>
+        <li><a href="#features">Functies</a></li>
+        <li><a href="#how">Hoe het werkt</a></li>
+      </ul>
+      <p class="footer-copy">2026 MotoRoute. Rij vrij.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══ Scroll-reveal + Nav scroll ═══════════════════════════════════ -->
+<script>
+// Intersection Observer scroll-reveal
+(function(){
+  const els = document.querySelectorAll('[data-reveal]');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('is-visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(el => io.observe(el));
+
+  // Trigger elements already in view on load
+  requestAnimationFrame(() => {
+    document.querySelectorAll('[data-reveal]').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.9) {
+        el.classList.add('is-visible');
+        io.unobserve(el);
+      }
+    });
+  });
+})();
+
+// Navbar hide/show on scroll
+(function(){
+  const nav = document.querySelector('.nav');
+  let lastY = 0;
+  let ticking = false;
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (y > lastY + 10 && y > 120) {
+          nav.style.transform = 'translateY(-120px)';
+        } else if (y < lastY - 10 || y < 80) {
+          nav.style.transform = 'translateY(0)';
+        }
+        lastY = y;
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+})();
+</script>
+
+</body>
+</html>
