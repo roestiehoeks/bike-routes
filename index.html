@@ -666,15 +666,17 @@ function clearPolylines(){
 }
 
 // ─── Auth state change ────────────────────────────────────────────────────────
-sb.auth.onAuthStateChange(async(_event, session)=>{
+sb.auth.onAuthStateChange((_event, session)=>{
   S.user=session?.user||null;
   renderHeaderAuth();
   if(S.user){
-    await loadRoutesFromDB();
+    loadRoutesFromDB().then(() => {
+      renderSavedRoutes();
+    });
   } else {
     S.savedRoutes=[];
+    renderSavedRoutes();
   }
-  renderSavedRoutes();
 });
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
