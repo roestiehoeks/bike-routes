@@ -183,8 +183,32 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 #nav-wrap{position:relative;flex-shrink:0}
 #btn-navigate{padding:7px 14px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-family:inherit;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap}
 #btn-navigate:hover{border-color:var(--accent);color:var(--accent)}
-#nav-dropdown{position:absolute;right:0;bottom:calc(100% + 8px);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px;display:none;flex-direction:column;gap:3px;z-index:200;min-width:200px;box-shadow:var(--shadow)}
-#nav-dropdown.open{display:flex}
+#nav-dropdown {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 200;
+  min-width: 200px;
+  box-shadow: var(--shadow);
+  
+  /* Subtiele animatie instellingen */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(10px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+#nav-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
 .nav-option{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);border:none;background:none;font-family:inherit;width:100%;text-align:left;transition:background .15s,color .15s}
 .nav-option:hover{background:rgba(79,140,255,.1);color:var(--text)}
 .nav-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:700}
