@@ -490,11 +490,8 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 const { createClient } = supabase;
 
 function makeMutex() {
-  const locks = {};
-  return (name, _timeout, fn) => {
-    const p = (locks[name] || Promise.resolve()).then(() => fn());
-    locks[name] = p.catch(() => {});
-    return p;
+  return async (name, _timeout, fn) => {
+    return await fn();
   };
 }
 
