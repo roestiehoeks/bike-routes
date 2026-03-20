@@ -179,6 +179,16 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 #toast.success{border-color:var(--green);color:var(--green)}
 #toast.error{border-color:var(--red);color:var(--red)}
 
+/* ─── Navigate dropdown ─── */
+#nav-wrap{position:relative;flex-shrink:0}
+#btn-navigate{padding:7px 14px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-family:inherit;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap}
+#btn-navigate:hover{border-color:var(--accent);color:var(--accent)}
+#nav-dropdown{position:absolute;right:0;bottom:calc(100% + 8px);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px;display:none;flex-direction:column;gap:3px;z-index:200;min-width:200px;box-shadow:var(--shadow)}
+#nav-dropdown.open{display:flex}
+.nav-option{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);border:none;background:none;font-family:inherit;width:100%;text-align:left;transition:background .15s,color .15s}
+.nav-option:hover{background:rgba(79,140,255,.1);color:var(--text)}
+.nav-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:700}
+
 /* ─── Auth modal ─── */
 #auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 #auth-overlay.visible{display:flex}
@@ -371,6 +381,26 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
         </div>
         <div id="info-type-badge" class="info-badge"></div>
       </div>
+      <div class="info-row" style="margin-top:10px">
+        <div id="nav-wrap">
+          <button id="btn-navigate" aria-haspopup="true" aria-expanded="false">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            Navigeer via…
+          </button>
+          <div id="nav-dropdown" role="menu">
+            <button class="nav-option" id="nav-google" role="menuitem">
+              <div class="nav-icon" style="background:#e8f0fe;color:#1a73e8">G</div>
+              Google Maps
+            </button>
+            <button class="nav-option" id="nav-apple" role="menuitem">
+              <div class="nav-icon" style="background:#f0f0f5;color:#555">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              </div>
+              Apple Kaarten
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="save-form">
       <input type="text" id="route-name-input" placeholder="Geef deze route een naam…" maxlength="40"/>
@@ -494,7 +524,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 }).addTo(map);
 L.control.zoom({position:'bottomright'}).addTo(map);
 
-let startMarker=null,activePolyline=null,savedPolylines={};
+let startMarker=null,activePolyline=null,savedPolylines={},activeRouteCoords=null;
 const startIcon=L.divIcon({className:'',html:`<div style="background:#4f8cff;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px #0008"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -764,6 +794,7 @@ async function generateRoute(){
     activePolyline=L.polyline(lls,{color:'#4f8cff',weight:5,opacity:.9,dashArray:type==='oneway'?'10 6':null,lineCap:'round',lineJoin:'round'}).addTo(map);
     map.fitBounds(activePolyline.getBounds(),{padding:[40,40]});
     S.currentRoute={coords:lls,dist:route.distance,dur:route.duration,type,durationMin:dur,filters,start:S.start};
+    activeRouteCoords=lls;
     showRouteInfo(formatDist(route.distance),formatDur(route.duration),typeLabels[type]||type);
     $('route-name-input').value='';
     toast('Route gegenereerd!');
@@ -947,6 +978,7 @@ function loadSavedRoute(r){
   activePolyline=L.polyline(r.coords,{color:'#4f8cff',weight:5,opacity:.9,lineCap:'round',lineJoin:'round'}).addTo(map);
   map.fitBounds(activePolyline.getBounds(),{padding:[40,40]});
   S.loadedRouteId=r.id;
+  activeRouteCoords=r.coords;
   setStart(r.start[0],r.start[1],r.name);
   showRouteInfo(formatDist(r.dist),formatDur(r.dur),typeLabels[r.type]||r.type,false);
   renderSavedRoutes();
@@ -960,6 +992,56 @@ function switchToSaved(){
   document.querySelector('.tab[data-tab="saved"]').setAttribute('aria-selected','true');
   $('panel-saved').classList.add('active');
 }
+
+// ─── Navigation (Google Maps / Apple Maps) ────────────────────────────────────
+function sampleCoords(coords, n) {
+  if(coords.length<=n) return coords;
+  const out=[];
+  for(let i=0;i<n;i++){
+    out.push(coords[Math.round(i*(coords.length-1)/(n-1))]);
+  }
+  return out;
+}
+function buildGoogleMapsURL(coords){
+  const pts=sampleCoords(coords,10);
+  const origin=pts[0],dest=pts[pts.length-1],wps=pts.slice(1,-1);
+  let url=`https://www.google.com/maps/dir/?api=1&origin=${origin[0]},${origin[1]}&destination=${dest[0]},${dest[1]}`;
+  if(wps.length) url+=`&waypoints=${wps.map(p=>p[0]+','+p[1]).join('|')}`;
+  url+='&travelmode=driving';
+  return url;
+}
+function buildAppleMapsURL(coords){
+  const start=coords[0],end=coords[coords.length-1];
+  // Sample a few waypoints to encode as intermediate stops (daddr can be chained)
+  const pts=sampleCoords(coords,5);
+  const stops=pts.slice(1).map(p=>p[0]+','+p[1]).join('+to:');
+  return `https://maps.apple.com/?saddr=${start[0]},${start[1]}&daddr=${stops}&dirflg=d`;
+}
+
+function toggleNavDropdown(){
+  const dd=$('nav-dropdown'),btn=$('btn-navigate');
+  const open=dd.classList.toggle('open');
+  btn.setAttribute('aria-expanded', open);
+}
+function closeNavDropdown(){
+  $('nav-dropdown').classList.remove('open');
+  $('btn-navigate').setAttribute('aria-expanded','false');
+}
+
+$('btn-navigate').addEventListener('click',e=>{e.stopPropagation();toggleNavDropdown()});
+document.addEventListener('click',()=>closeNavDropdown());
+$('nav-dropdown').addEventListener('click',e=>e.stopPropagation());
+
+$('nav-google').addEventListener('click',()=>{
+  if(!activeRouteCoords){toast('Geen actieve route','error');return}
+  window.open(buildGoogleMapsURL(activeRouteCoords),'_blank');
+  closeNavDropdown();
+});
+$('nav-apple').addEventListener('click',()=>{
+  if(!activeRouteCoords){toast('Geen actieve route','error');return}
+  window.open(buildAppleMapsURL(activeRouteCoords),'_blank');
+  closeNavDropdown();
+});
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 renderHeaderAuth();
