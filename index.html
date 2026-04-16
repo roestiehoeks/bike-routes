@@ -242,6 +242,12 @@ input[type=range]{width:100%;accent-color:var(--accent-bright);cursor:pointer}
 .auth-footer a{color:var(--accent-bright);cursor:pointer;font-weight:510}
 .auth-footer a:hover{text-decoration:underline}
 
+/* ─── Mode toggle ─── */
+.mode-toggle{display:flex;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius);padding:3px;gap:2px;flex-shrink:0}
+.mode-btn{flex:1;padding:7px 8px;border-radius:6px;border:none;background:transparent;color:var(--text4);font-family:inherit;font-feature-settings:'cv01','ss03';font-size:12px;font-weight:510;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
+.mode-btn:hover{color:var(--text3)}
+.mode-btn.active{background:rgba(255,255,255,0.07);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+
 /* ─── Mobile ─── */
 @media(max-width:768px){
   #app{flex-direction:column-reverse}
@@ -287,6 +293,19 @@ input[type=range]{width:100%;accent-color:var(--accent-bright);cursor:pointer}
 
     <!-- Plan panel -->
     <div id="panel-plan" class="panel active">
+
+      <!-- Mode toggle -->
+      <div class="mode-toggle" id="mode-toggle" role="group" aria-label="Routemodus">
+        <button class="mode-btn active" data-mode="loop">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+          Rondje
+        </button>
+        <button class="mode-btn" data-mode="destination">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          Naar bestemming
+        </button>
+      </div>
+
       <div class="section">
         <div class="section-title">Vertrekpunt</div>
         <div>
@@ -313,7 +332,30 @@ input[type=range]{width:100%;accent-color:var(--accent-bright);cursor:pointer}
         </div>
       </div>
 
-      <div class="section">
+      <!-- Bestemmingssectie (alleen zichtbaar in destination-mode) -->
+      <div class="section" id="dest-section" style="display:none">
+        <div class="section-title">Bestemming</div>
+        <div>
+          <label for="dest-input">Adres of plaats</label>
+          <input type="text" id="dest-input" placeholder="bijv. Keulen, Duitsland" autocomplete="off"/>
+        </div>
+        <div class="loc-btns">
+          <button class="btn btn-secondary btn-sm" id="btn-dest-geocode" aria-label="Bestemming zoeken">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Zoeken
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-dest-pick" aria-label="Klik op kaart">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            Kaart
+          </button>
+        </div>
+        <div id="dest-display" style="font-size:11px;color:var(--green2);display:none;align-items:center;gap:5px">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="dest-label"></span>
+        </div>
+      </div>
+
+      <div class="section" id="dur-section">
         <div class="section-title">Duur</div>
         <div class="pill-group" id="duration-pills">
           <div class="pill" data-min="30" role="button" tabindex="0">30 min</div>
@@ -536,6 +578,9 @@ const sb = createClient(
 // ─── State ────────────────────────────────────────────────────────────────────
 const S = {
   start: null,
+  destination: null,
+  mode: 'loop',           // 'loop' | 'destination'
+  pickTarget: 'start',   // 'start' | 'destination'
   durationMin: 60,
   routeType: 'scenic',
   filters: {},
@@ -553,8 +598,9 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 }).addTo(map);
 L.control.zoom({position:'bottomright'}).addTo(map);
 
-let startMarker=null,activePolyline=null,savedPolylines={},activeRouteCoords=null;
-const startIcon=L.divIcon({className:'',html:`<div style="background:#4f8cff;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px #0008"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
+let startMarker=null,destMarker=null,activePolyline=null,savedPolylines={},activeRouteCoords=null;
+const startIcon=L.divIcon({className:'',html:`<div style="background:#5e6ad2;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px #0008"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
+const destIcon=L.divIcon({className:'',html:`<div style="background:#10b981;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px #0008"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function $(id){return document.getElementById(id)}
@@ -695,6 +741,8 @@ function clearPolylines(){
   Object.values(savedPolylines).forEach(p=>map.removeLayer(p));
   savedPolylines={};
   if(activePolyline){map.removeLayer(activePolyline);activePolyline=null}
+  if(destMarker){map.removeLayer(destMarker);destMarker=null}
+  S.destination=null;
 }
 
 // ─── Auth state change ────────────────────────────────────────────────────────
@@ -718,6 +766,19 @@ document.querySelectorAll('.tab').forEach(tab=>{
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
     tab.classList.add('active');tab.setAttribute('aria-selected','true');
     $('panel-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ─── Mode toggle ──────────────────────────────────────────────────────────────
+document.querySelectorAll('.mode-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    S.mode=btn.dataset.mode;
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b===btn));
+    const isLoop=S.mode==='loop';
+    $('dur-section').style.display=isLoop?'':'none';
+    $('dest-section').style.display=isLoop?'none':'';
+    // Reset bestemming bij wisselen naar rondje
+    if(isLoop&&destMarker){map.removeLayer(destMarker);destMarker=null;S.destination=null;$('dest-display').style.display='none';}
   });
 });
 
@@ -774,13 +835,45 @@ $('btn-myloc').addEventListener('click',()=>{
     ()=>toast('Kon locatie niet ophalen','error')
   );
 });
+// ─── Destination ──────────────────────────────────────────────────────────────
+function setDestination(lat,lng,label){
+  S.destination=[lat,lng];
+  if(destMarker) map.removeLayer(destMarker);
+  destMarker=L.marker([lat,lng],{icon:destIcon,zIndexOffset:900}).addTo(map)
+    .bindPopup(`<b>Bestemming:</b> ${label||lat.toFixed(5)+', '+lng.toFixed(5)}`);
+  $('dest-display').style.display='flex';
+  $('dest-label').textContent=label||`${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  map.setView([lat,lng],13);
+}
+
+$('btn-dest-geocode').addEventListener('click',geocodeDest);
+$('dest-input').addEventListener('keydown',e=>{if(e.key==='Enter')geocodeDest()});
+async function geocodeDest(){
+  const q=$('dest-input').value.trim();
+  if(!q){toast('Voer eerst een bestemming in','error');return}
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=nl,de,be`);
+    const data=await r.json();
+    if(!data.length){toast('Bestemming niet gevonden','error');return}
+    setDestination(parseFloat(data[0].lat),parseFloat(data[0].lon),data[0].display_name.split(',')[0]);
+  }catch{toast('Zoeken mislukt','error')}
+}
+
 $('btn-pick').addEventListener('click',()=>{
-  S.pickMode=true;$('pick-hint').style.display='block';map.getContainer().style.cursor='crosshair';
+  S.pickMode=true;S.pickTarget='start';
+  $('pick-hint').textContent='Klik op de kaart om je startpunt in te stellen';
+  $('pick-hint').style.display='block';map.getContainer().style.cursor='crosshair';
+});
+$('btn-dest-pick').addEventListener('click',()=>{
+  S.pickMode=true;S.pickTarget='destination';
+  $('pick-hint').textContent='Klik op de kaart om je bestemming in te stellen';
+  $('pick-hint').style.display='block';map.getContainer().style.cursor='crosshair';
 });
 map.on('click',e=>{
   if(!S.pickMode)return;
   S.pickMode=false;$('pick-hint').style.display='none';map.getContainer().style.cursor='';
-  setStart(e.latlng.lat,e.latlng.lng);
+  if(S.pickTarget==='destination') setDestination(e.latlng.lat,e.latlng.lng);
+  else setStart(e.latlng.lat,e.latlng.lng);
 });
 $('btn-center').addEventListener('click',()=>{
   if(S.start)map.setView(S.start,14);
@@ -811,30 +904,47 @@ function formatDur(s){const m=Math.round(s/60);return m>=60?`${Math.floor(m/60)}
 $('btn-generate').addEventListener('click',generateRoute);
 async function generateRoute(){
   if(!S.start){toast('Stel eerst een startpunt in','error');return}
+  if(S.mode==='destination'&&!S.destination){toast('Stel ook een bestemming in','error');return}
+
   const [lat,lng]=S.start,type=S.routeType,dur=S.durationMin;
   const filters={highway:$('f-highway').checked,busy:$('f-busy').checked,unpaved:$('f-unpaved').checked,dirt:$('f-dirt').checked};
   setLoading(true);hideRouteInfo();
   if(activePolyline){map.removeLayer(activePolyline);activePolyline=null}
-  const wps=makeWaypoints(lat,lng,estimateDistance(dur,type),type,filters);
-  const coords=[[lat,lng],...wps].map(p=>p[1]+','+p[0]).join(';');
+
+  let coords;
+  if(S.mode==='destination'){
+    const [dlat,dlng]=S.destination;
+    coords=`${lng},${lat};${dlng},${dlat}`;
+  } else {
+    const wps=makeWaypoints(lat,lng,estimateDistance(dur,type),type,filters);
+    coords=[[lat,lng],...wps].map(p=>p[1]+','+p[0]).join(';');
+  }
+
   try{
     const r=await fetch(`https://router.project-osrm.org/route/v1/car/${coords}?overview=full&geometries=geojson&steps=false`);
     const data=await r.json();
     if(data.code!=='Ok'||!data.routes?.length)throw new Error('No route');
     const route=data.routes[0],lls=route.geometry.coordinates.map(c=>[c[1],c[0]]);
-    activePolyline=L.polyline(lls,{color:'#4f8cff',weight:5,opacity:.9,dashArray:type==='oneway'?'10 6':null,lineCap:'round',lineJoin:'round'}).addTo(map);
+    activePolyline=L.polyline(lls,{color:'#5e6ad2',weight:5,opacity:.9,dashArray:type==='oneway'?'10 6':null,lineCap:'round',lineJoin:'round'}).addTo(map);
     map.fitBounds(activePolyline.getBounds(),{padding:[40,40]});
-    S.currentRoute={coords:lls,dist:route.distance,dur:route.duration,type,durationMin:dur,filters,start:S.start};
+    S.currentRoute={coords:lls,dist:route.distance,dur:route.duration,type,durationMin:dur,filters,start:S.start,destination:S.destination,mode:S.mode};
     activeRouteCoords=lls;
     showRouteInfo(formatDist(route.distance),formatDur(route.duration),typeLabels[type]||type);
     $('route-name-input').value='';
     toast('Route gegenereerd!');
   }catch(e){
-    toast('Kon geen route genereren. Probeer een ander startpunt.','error');console.error(e);
+    toast('Kon geen route genereren. Probeer andere punten.','error');console.error(e);
   }finally{setLoading(false)}
 }
 
 $('btn-surprise').addEventListener('click',()=>{
+  // Zorg dat we in rondje-modus zitten
+  if(S.mode!=='loop'){
+    S.mode='loop';
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode==='loop'));
+    $('dur-section').style.display='';
+    $('dest-section').style.display='none';
+  }
   const types=['scenic','flat','hilly','mixed','loop','oneway'];
   const type=types[Math.floor(Math.random()*types.length)];
   const durations=[30,45,60,90,120],dur=durations[Math.floor(Math.random()*durations.length)];
