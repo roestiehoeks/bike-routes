@@ -543,7 +543,7 @@ input[type=range]{width:100%;accent-color:var(--accent-bright);cursor:pointer}
         <label for="auth-email">E-mailadres</label>
         <input type="email" id="auth-email" placeholder="jij@voorbeeld.nl" autocomplete="email"/>
       </div>
-      <div>
+      <div id="auth-password-wrap">
         <label for="auth-password">Wachtwoord</label>
         <input type="password" id="auth-password" placeholder="Minimaal 6 tekens" autocomplete="current-password"/>
       </div>
@@ -552,7 +552,9 @@ input[type=range]{width:100%;accent-color:var(--accent-bright);cursor:pointer}
     <div id="auth-info"></div>
     <button class="btn btn-primary" id="auth-submit">Inloggen</button>
     <div class="auth-footer">
-      Nog geen account? <a id="auth-toggle-link">Registreren</a>
+      <span id="auth-footer-register">Nog geen account? <a id="auth-toggle-link">Registreren</a></span>
+      <span id="auth-footer-sep" style="margin:0 6px;opacity:.35">·</span>
+      <a id="auth-reset-link">Wachtwoord vergeten?</a>
     </div>
   </div>
 </div>
@@ -660,11 +662,22 @@ $('header-auth').addEventListener('click', e=>{
 function openAuthModal(mode='login'){
   authMode=mode;
   $('auth-overlay').classList.add('visible');
-  $('auth-title').textContent=mode==='login'?'Inloggen':'Registreren';
-  $('auth-submit').textContent=mode==='login'?'Inloggen':'Account aanmaken';
-  $('auth-toggle-link').textContent=mode==='login'?'Registreren':'Toch inloggen';
-  document.querySelector('.auth-footer').firstChild.textContent=
-    mode==='login'?'Nog geen account? ':'Al een account? ';
+  const isReset=mode==='reset';
+  $('auth-title').textContent=isReset?'Wachtwoord resetten':mode==='login'?'Inloggen':'Registreren';
+  $('auth-submit').textContent=isReset?'Stuur reset-link':mode==='login'?'Inloggen':'Account aanmaken';
+  // Wachtwoordveld verbergen bij reset
+  $('auth-password-wrap').style.display=isReset?'none':'';
+  // Footer aanpassen
+  $('auth-footer-register').style.display=isReset?'none':'';
+  $('auth-footer-sep').style.display=isReset?'none':'';
+  if(isReset){
+    $('auth-reset-link').textContent='Terug naar inloggen';
+  } else {
+    $('auth-toggle-link').textContent=mode==='login'?'Registreren':'Toch inloggen';
+    document.getElementById('auth-footer-register').firstChild.textContent=
+      mode==='login'?'Nog geen account? ':'Al een account? ';
+    $('auth-reset-link').textContent='Wachtwoord vergeten?';
+  }
   $('auth-error').className='';$('auth-error').textContent='';
   $('auth-info').className='';$('auth-info').textContent='';
   setTimeout(()=>$('auth-email').focus(),50);
@@ -673,6 +686,7 @@ function openAuthModal(mode='login'){
 function closeAuthModal(){
   $('auth-overlay').classList.remove('visible');
   $('auth-password').value='';
+  $('auth-submit').style.display='';
   $('auth-error').className='';$('auth-error').textContent='';
   $('auth-info').className='';$('auth-info').textContent='';
 }
@@ -680,6 +694,7 @@ function closeAuthModal(){
 $('btn-close-auth').addEventListener('click', closeAuthModal);
 $('auth-overlay').addEventListener('click', e=>{if(e.target===$('auth-overlay'))closeAuthModal()});
 $('auth-toggle-link').addEventListener('click', ()=>openAuthModal(authMode==='login'?'register':'login'));
+$('auth-reset-link').addEventListener('click', ()=>openAuthModal(authMode==='reset'?'login':'reset'));
 $('btn-auth-from-saved').addEventListener('click', ()=>openAuthModal());
 
 $('auth-password').addEventListener('keydown', e=>{if(e.key==='Enter')doAuth()});
@@ -687,6 +702,30 @@ $('auth-submit').addEventListener('click', doAuth);
 
 async function doAuth(){
   const email=$('auth-email').value.trim();
+
+  // ─── Wachtwoord reset ───────────────────────────────────────────────────────
+  if(authMode==='reset'){
+    if(!email){showAuthError('Vul je e-mailadres in.');return}
+    $('auth-submit').disabled=true;
+    $('auth-submit').innerHTML='<span class="spinner"></span>';
+    $('auth-error').className='';
+    try{
+      const{error}=await sb.auth.resetPasswordForEmail(email,{
+        redirectTo:window.location.origin+window.location.pathname
+      });
+      if(error) throw error;
+      showAuthInfo('Reset-link verstuurd! Check je inbox (en spammap).');
+      $('auth-submit').style.display='none';
+    }catch(err){
+      showAuthError(err.message||'Versturen mislukt. Probeer het opnieuw.');
+    }finally{
+      $('auth-submit').disabled=false;
+      $('auth-submit').textContent='Stuur reset-link';
+    }
+    return;
+  }
+
+  // ─── Inloggen / registreren ─────────────────────────────────────────────────
   const password=$('auth-password').value;
   if(!email||!password){showAuthError('Vul je e-mail en wachtwoord in.');return}
   if(password.length<6){showAuthError('Wachtwoord moet minimaal 6 tekens zijn.');return}
@@ -705,7 +744,6 @@ async function doAuth(){
     if(result.error) throw result.error;
 
     if(authMode==='register'&&!result.data.session){
-      // E-mailbevestiging vereist
       showAuthInfo('Check je e-mail voor een bevestigingslink!');
     } else {
       closeAuthModal();
