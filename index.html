@@ -547,6 +547,16 @@ input[type=range]{width:100%;accent-color:var(--accent-bright);cursor:pointer}
         <label for="auth-password">Wachtwoord</label>
         <input type="password" id="auth-password" placeholder="Minimaal 6 tekens" autocomplete="current-password"/>
       </div>
+      <div id="auth-newpw-wrap" style="display:none;flex-direction:column;gap:12px">
+        <div>
+          <label for="auth-newpw">Nieuw wachtwoord</label>
+          <input type="password" id="auth-newpw" placeholder="Minimaal 6 tekens" autocomplete="new-password"/>
+        </div>
+        <div>
+          <label for="auth-newpw-confirm">Bevestig wachtwoord</label>
+          <input type="password" id="auth-newpw-confirm" placeholder="Herhaal je nieuwe wachtwoord" autocomplete="new-password"/>
+        </div>
+      </div>
     </div>
     <div id="auth-error"></div>
     <div id="auth-info"></div>
@@ -663,24 +673,47 @@ function openAuthModal(mode='login'){
   authMode=mode;
   $('auth-overlay').classList.add('visible');
   const isReset=mode==='reset';
-  $('auth-title').textContent=isReset?'Wachtwoord resetten':mode==='login'?'Inloggen':'Registreren';
-  $('auth-submit').textContent=isReset?'Stuur reset-link':mode==='login'?'Inloggen':'Account aanmaken';
-  // Wachtwoordveld verbergen bij reset
-  $('auth-password-wrap').style.display=isReset?'none':'';
-  // Footer aanpassen
-  $('auth-footer-register').style.display=isReset?'none':'';
-  $('auth-footer-sep').style.display=isReset?'none':'';
-  if(isReset){
+  const isNewPw=mode==='new-password';
+
+  // Titels en knoptekst
+  $('auth-title').textContent=
+    isNewPw?'Nieuw wachtwoord instellen':
+    isReset?'Wachtwoord resetten':
+    mode==='login'?'Inloggen':'Registreren';
+  $('auth-submit').textContent=
+    isNewPw?'Wachtwoord opslaan':
+    isReset?'Stuur reset-link':
+    mode==='login'?'Inloggen':'Account aanmaken';
+  $('auth-submit').style.display='';
+
+  // Velden tonen/verbergen
+  const showEmail=!isNewPw;
+  const showPw=!isReset&&!isNewPw;
+  const showNewPw=isNewPw;
+  $('auth-email').closest('div').style.display=showEmail?'':'none';
+  $('auth-password-wrap').style.display=showPw?'':'none';
+  $('auth-newpw-wrap').style.display=showNewPw?'flex':'none';
+
+  // Footer
+  const hideFooter=isNewPw||isReset;
+  $('auth-footer-register').style.display=hideFooter?'none':'';
+  $('auth-footer-sep').style.display=hideFooter?'none':'';
+  if(isNewPw){
+    $('auth-reset-link').style.display='none';
+  } else if(isReset){
+    $('auth-reset-link').style.display='';
     $('auth-reset-link').textContent='Terug naar inloggen';
   } else {
+    $('auth-reset-link').style.display='';
+    $('auth-reset-link').textContent='Wachtwoord vergeten?';
     $('auth-toggle-link').textContent=mode==='login'?'Registreren':'Toch inloggen';
     document.getElementById('auth-footer-register').firstChild.textContent=
       mode==='login'?'Nog geen account? ':'Al een account? ';
-    $('auth-reset-link').textContent='Wachtwoord vergeten?';
   }
+
   $('auth-error').className='';$('auth-error').textContent='';
   $('auth-info').className='';$('auth-info').textContent='';
-  setTimeout(()=>$('auth-email').focus(),50);
+  setTimeout(()=>(isNewPw?$('auth-newpw'):$('auth-email')).focus(),50);
 }
 
 function closeAuthModal(){
@@ -721,6 +754,30 @@ async function doAuth(){
     }finally{
       $('auth-submit').disabled=false;
       $('auth-submit').textContent='Stuur reset-link';
+    }
+    return;
+  }
+
+  // ─── Nieuw wachtwoord instellen ────────────────────────────────────────────
+  if(authMode==='new-password'){
+    const pw=$('auth-newpw').value;
+    const pwc=$('auth-newpw-confirm').value;
+    if(!pw){showAuthError('Voer een nieuw wachtwoord in.');return}
+    if(pw.length<6){showAuthError('Wachtwoord moet minimaal 6 tekens zijn.');return}
+    if(pw!==pwc){showAuthError('De wachtwoorden komen niet overeen.');return}
+    $('auth-submit').disabled=true;
+    $('auth-submit').innerHTML='<span class="spinner"></span>';
+    $('auth-error').className='';
+    try{
+      const{error}=await sb.auth.updateUser({password:pw});
+      if(error) throw error;
+      closeAuthModal();
+      toast('Wachtwoord succesvol gewijzigd!');
+    }catch(err){
+      showAuthError(err.message||'Opslaan mislukt. Probeer opnieuw.');
+    }finally{
+      $('auth-submit').disabled=false;
+      $('auth-submit').textContent='Wachtwoord opslaan';
     }
     return;
   }
@@ -784,7 +841,14 @@ function clearPolylines(){
 }
 
 // ─── Auth state change ────────────────────────────────────────────────────────
-sb.auth.onAuthStateChange((_event, session)=>{
+sb.auth.onAuthStateChange((event, session)=>{
+  // Gebruiker komt terug via reset-link in e-mail
+  if(event==='PASSWORD_RECOVERY'){
+    S.user=session?.user||null;
+    renderHeaderAuth();
+    openAuthModal('new-password');
+    return;
+  }
   S.user=session?.user||null;
   renderHeaderAuth();
   if(S.user){
