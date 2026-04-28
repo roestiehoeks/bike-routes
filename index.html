@@ -1022,9 +1022,19 @@ async function generateRoute(){
     coords=[[lat,lng],...wps].map(p=>p[1]+','+p[0]).join(';');
   }
 
+  // Bouw exclude-parameter op basis van actieve filters
+  // OSRM car-profiel ondersteunt: motorway, toll, ferry
+  const excludes=[];
+  if(filters.highway) excludes.push('motorway');
+  const excludeParam=excludes.length?`&exclude=${excludes.join(',')}`:'';
+
   try{
-    const r=await fetch(`https://router.project-osrm.org/route/v1/car/${coords}?overview=full&geometries=geojson&steps=false`);
+    const r=await fetch(`https://router.project-osrm.org/route/v1/car/${coords}?overview=full&geometries=geojson&steps=false${excludeParam}`);
     const data=await r.json();
+    // OSRM geeft InvalidValue als een exclude-klasse de route onmogelijk maakt
+    if(data.code==='InvalidValue'&&excludes.length){
+      toast('Geen route mogelijk zonder snelwegen. Pas je filters aan.','error');setLoading(false);return;
+    }
     if(data.code!=='Ok'||!data.routes?.length)throw new Error('No route');
     const route=data.routes[0],lls=route.geometry.coordinates.map(c=>[c[1],c[0]]);
     activePolyline=L.polyline(lls,{color:'#5e6ad2',weight:5,opacity:.9,dashArray:type==='oneway'?'10 6':null,lineCap:'round',lineJoin:'round'}).addTo(map);
