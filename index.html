@@ -1027,15 +1027,28 @@ async function generateRoute(){
   const excludes=[];
   if(filters.highway) excludes.push('motorway');
   const excludeParam=excludes.length?`&exclude=${excludes.join(',')}`:'';
+  const baseOsrm=`https://router.project-osrm.org/route/v1/car/${coords}?overview=full&geometries=geojson&steps=false`;
 
   try{
-    const r=await fetch(`https://router.project-osrm.org/route/v1/car/${coords}?overview=full&geometries=geojson&steps=false${excludeParam}`);
-    const data=await r.json();
-    // OSRM geeft InvalidValue als een exclude-klasse de route onmogelijk maakt
-    if(data.code==='InvalidValue'&&excludes.length){
-      toast('Geen route mogelijk zonder snelwegen. Pas je filters aan.','error');setLoading(false);return;
+    let data,usedFallback=false;
+
+    // Stap 1: probeer met filter (bijv. exclude=motorway)
+    const r=await fetch(baseOsrm+excludeParam);
+    data=await r.json();
+
+    // Stap 2: als OSRM de exclude niet kan verwerken voor dit traject,
+    // probeer opnieuw zonder filter (pont/veer kan bijv. toch een optie zijn)
+    if((data.code==='InvalidValue'||data.code!=='Ok')&&excludes.length){
+      const r2=await fetch(baseOsrm);
+      data=await r2.json();
+      usedFallback=true;
     }
+
     if(data.code!=='Ok'||!data.routes?.length)throw new Error('No route');
+
+    if(usedFallback&&filters.highway){
+      toast('Let op: geen snelwegvrije route gevonden – route kan snelwegen bevatten.','error');
+    }
     const route=data.routes[0],lls=route.geometry.coordinates.map(c=>[c[1],c[0]]);
     activePolyline=L.polyline(lls,{color:'#5e6ad2',weight:5,opacity:.9,dashArray:type==='oneway'?'10 6':null,lineCap:'round',lineJoin:'round'}).addTo(map);
     map.fitBounds(activePolyline.getBounds(),{padding:[40,40]});
